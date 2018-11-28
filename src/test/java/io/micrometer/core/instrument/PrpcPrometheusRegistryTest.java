@@ -2,14 +2,13 @@ package io.micrometer.core.instrument;
 
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
-import io.micrometer.core.instrument.prpc.PrpcSource;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.junit.jupiter.api.Test;
+import ru.sbrf.pegi18.mon.prpc.AbstractPrpcSource;
+import ru.sbrf.pegi18.mon.prpc.PrpcSource;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -29,41 +28,72 @@ public class PrpcPrometheusRegistryTest {
         registry.gauge("name", Tags.of(Tag.of("t1", "v1")), 1);
         registry.gauge("name", Tags.of(Tag.of("t1", "v2")), 2);
 
+        registry.counter("nn").increment();
+
         System.out.println(registry.scrape());
 
     }
 
-    @Test
-    void test3() {
-
-        PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
-
-        PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
-        registry.gauge("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource);
-
-        System.out.println(registry.scrape());
-    }
+//    @Test
+//    void test3() {
+//
+//        PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
+//
+//        PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
+//        registry.gauge("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource);
+//
+//        System.out.println(registry.scrape());
+//    }
 
     @Test
     void test4() {
 
         PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
+        PrpcSource prpcSource2 = getPrpcSourceSpy(Arrays.asList("5.0", "10.0", "16.0"));
 
         PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
-        registry.gauge("brand.new.prpc.gauge", Tags.of("key", "val"), "Value", prpcSource);
+        registry.gauge("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource, "Value");
+        registry.gauge("brand.new.prpc.gauge2", Tags.of("key", "val"), prpcSource2, "Value");
 
         System.out.println(registry.scrape());
     }
 
+    @Test
+    void test5() {
+
+        PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
+        PrpcSource prpcSource2 = getPrpcSourceSpy(Arrays.asList("5.0", "10.0", "16.0"));
+
+        PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
+        registry.counter("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource, "Value");
+        registry.counter("brand.new.prpc.gauge2", Tags.of("key", "val"), prpcSource2, "Value");
+
+        System.out.println(registry.scrape());
+    }
+
+    @Test
+    void test6() {
+
+        PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
+        PrpcSource prpcSource2 = getPrpcSourceSpy(Arrays.asList("5.0", "10.0", "16.0"));
+
+        PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
+        registry.timer("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource, "Value", "Value");
+        registry.timer("brand.new.prpc.gauge2", Tags.of("key", "val"), prpcSource2, "Value", "Value");
+
+        System.out.println(registry.scrape());
+    }
 
     private PrpcSource getPrpcSourceSpy(List<String> valueList) {
-        String valueProp = ".Value";
+        return getPrpcSourceSpy("Value", valueList);
+    }
 
-        ClipboardProperty property = getSourceResultsMock(valueProp, valueList);
+    private PrpcSource getPrpcSourceSpy(String resultsPropName, List<String> valueList) {
+        ClipboardProperty property = getSourceResultsMock(resultsPropName, valueList);
 
         PrpcSource prpcSource = spy(AbstractPrpcSource.class);
         when(prpcSource.collect()).thenReturn(property);
-        when(prpcSource.valueProp()).thenReturn(valueProp);
+        when(prpcSource.resultsPropName()).thenReturn(resultsPropName);
         return prpcSource;
     }
 
