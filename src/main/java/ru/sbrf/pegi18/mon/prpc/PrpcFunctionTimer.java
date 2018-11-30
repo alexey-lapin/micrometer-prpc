@@ -38,6 +38,11 @@ public class PrpcFunctionTimer extends AbstractPrpcMeter {
         return writer.toString();
     }
 
+    @Override
+    public StringBuffer seriefy(StringBuffer buf, ClipboardPage page) {
+        return null;
+    }
+
     public static PrpcFunctionTimer.Builder builder() {
         return new PrpcFunctionTimer().new Builder();
     }

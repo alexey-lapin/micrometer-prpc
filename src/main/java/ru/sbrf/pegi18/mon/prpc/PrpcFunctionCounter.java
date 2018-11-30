@@ -27,6 +27,11 @@ public class PrpcFunctionCounter extends AbstractPrpcMeter {
         return writer.toString();
     }
 
+    @Override
+    public StringBuffer seriefy(StringBuffer buf, ClipboardPage page) {
+        return null;
+    }
+
     public static PrpcFunctionCounter.Builder builder() {
         return new PrpcFunctionCounter().new Builder();
     }

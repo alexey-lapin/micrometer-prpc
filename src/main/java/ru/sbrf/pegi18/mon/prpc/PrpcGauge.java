@@ -3,8 +3,6 @@ package ru.sbrf.pegi18.mon.prpc;
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import io.micrometer.core.instrument.Tags;
 
-import java.io.StringWriter;
-
 /**
  *
  */
@@ -18,13 +16,21 @@ public class PrpcGauge extends AbstractPrpcMeter {
 
     @Override
     public String seriefy(ClipboardPage page) {
-        StringWriter writer = new StringWriter();
-        writer.append(namify(getId()));
-        writer.append(tagify(Tags.of(propToTags(page.getIfPresent(getTagsPropName()))).and(getId().getTags())));
-        writer.append(" ");
-        writer.append(page.getProperty(getValuePropName()).getStringValue());
+        StringBuffer buf = new StringBuffer();
+        return seriefy(buf, page).toString();
+    }
 
-        return writer.toString();
+    @Override
+    public StringBuffer seriefy(StringBuffer buf, ClipboardPage page) {
+        long start = System.currentTimeMillis();
+        namify(buf, getId());
+        tagify(buf, Tags.of(propToTags(page.getIfPresent(getTagsPropName()))).and(getId().getTags()));
+        buf.append(" ");
+        buf.append(page.getProperty(getValuePropName()).toDouble());
+        if (logger.isDebugEnabled()) {
+            logger.debug(toString() + " seriefy succeeded - spent: " + (System.currentTimeMillis() - start));
+        }
+        return buf;
     }
 
     public static Builder builder() {
@@ -48,5 +54,13 @@ public class PrpcGauge extends AbstractPrpcMeter {
             PrpcGauge.this.valuePropName = this.valuePropName;
             return PrpcGauge.this;
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append(getClass().getSimpleName());
+        sb.append("[").append(getId()).append("]");
+        return sb.toString();
     }
 }

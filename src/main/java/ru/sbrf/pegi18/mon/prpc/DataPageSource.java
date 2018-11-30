@@ -1,5 +1,7 @@
 package ru.sbrf.pegi18.mon.prpc;
 
+import com.pega.pegarules.pub.PRRuntimeException;
+import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -11,23 +13,35 @@ public class DataPageSource extends AbstractPrpcSource {
     @Override
     public ClipboardProperty collect() {
 
-        // switch ag
-        String currentAccessGroup = getCurrenAccessGroup();
-        switchAccessGroup(accessGroup());
+        long start = System.currentTimeMillis();
+        if (logger.isDebugEnabled()) {
+            logger.debug(toString() + " collect using executable " + tools());
+        }
 
-        // find datapage
+        String currentAccessGroup = getCurrentAccessGroup();
+        if (!StringUtils.isBlank(currentAccessGroup) && !currentAccessGroup.equals(accessGroup())) {
+            switchAccessGroup(accessGroup());
+        }
+
         ClipboardProperty prop = null;
         try {
-            prop = tools().findPage(ruleName()).getProperty(resultsPropName());
+            ClipboardPage page = tools().findPage(ruleName(), parameterPage());
+            if (page == null) {
+                throw new PRRuntimeException("Failed to find data page " + ruleName());
+            }
+            prop = page.getProperty(resultsPropName());
+            int size = 0;
+            if (prop != null) {
+                size = prop.size();
+            }
+            logger.info(toString() + " collect succeeded - size: " + size + " spent: " + (System.currentTimeMillis() - start));
         } catch (Exception ex) {
-//            oLog.in
+            logger.error(toString() + " collect failed", ex);
         } finally {
-            // switch back
-            if (!StringUtils.isBlank(currentAccessGroup)) {
+            if (!StringUtils.isBlank(currentAccessGroup) && !currentAccessGroup.equals(accessGroup())) {
                 switchAccessGroup(currentAccessGroup);
             }
         }
-
         return prop;
     }
 
@@ -45,5 +59,4 @@ public class DataPageSource extends AbstractPrpcSource {
             return DataPageSource.this;
         }
     }
-
 }

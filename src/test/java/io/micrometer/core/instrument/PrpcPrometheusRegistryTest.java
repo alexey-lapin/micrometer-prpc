@@ -51,7 +51,7 @@ public class PrpcPrometheusRegistryTest {
         PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
         PrpcSource prpcSource2 = getPrpcSourceSpy(Arrays.asList("5.0", "10.0", "16.0"));
 
-        PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
+        PrpcPrometheusMeterRegistry registry = new PrpcPrometheusMeterRegistry(PrometheusConfig.DEFAULT);
         registry.gauge("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource, "Value");
         registry.gauge("brand.new.prpc.gauge2", Tags.of("key", "val"), prpcSource2, "Value");
 
@@ -64,7 +64,7 @@ public class PrpcPrometheusRegistryTest {
         PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
         PrpcSource prpcSource2 = getPrpcSourceSpy(Arrays.asList("5.0", "10.0", "16.0"));
 
-        PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
+        PrpcPrometheusMeterRegistry registry = new PrpcPrometheusMeterRegistry(PrometheusConfig.DEFAULT);
         registry.counter("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource, "Value");
         registry.counter("brand.new.prpc.gauge2", Tags.of("key", "val"), prpcSource2, "Value");
 
@@ -77,7 +77,7 @@ public class PrpcPrometheusRegistryTest {
         PrpcSource prpcSource = getPrpcSourceSpy(Arrays.asList("1.0", "2.00"));
         PrpcSource prpcSource2 = getPrpcSourceSpy(Arrays.asList("5.0", "10.0", "16.0"));
 
-        PrpcPrometheusRegistry registry = new PrpcPrometheusRegistry(PrometheusConfig.DEFAULT);
+        PrpcPrometheusMeterRegistry registry = new PrpcPrometheusMeterRegistry(PrometheusConfig.DEFAULT);
         registry.timer("brand.new.prpc.gauge", Tags.of("key", "val"), prpcSource, "Value", "Value");
         registry.timer("brand.new.prpc.gauge2", Tags.of("key", "val"), prpcSource2, "Value", "Value");
 

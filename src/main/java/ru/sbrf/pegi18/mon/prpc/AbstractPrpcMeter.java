@@ -6,10 +6,11 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
+import io.prometheus.client.Collector;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -18,6 +19,10 @@ import java.util.stream.StreamSupport;
  */
 public abstract class AbstractPrpcMeter {
 
+    public static final String PROP_NAME_TAG = "Tag";
+
+    protected final Logger logger = LogManager.getLogger(getClass());
+
     private Meter.Id id;
     private MeterRegistry.Config config;
 
@@ -25,6 +30,8 @@ public abstract class AbstractPrpcMeter {
     private String tagsPropName;
 
     public abstract String seriefy(ClipboardPage page);
+
+    public abstract StringBuffer seriefy(StringBuffer buf, ClipboardPage page);
 
     public Meter.Id getId() {
         return id;
@@ -44,47 +51,96 @@ public abstract class AbstractPrpcMeter {
 
     @SuppressWarnings("unchecked")
     public String promify() {
+        long start = System.currentTimeMillis();
         StringBuffer buf = new StringBuffer();
 
-        ClipboardProperty results = getSource().collect();
+        try {
+            StringBuffer meterBuf = new StringBuffer();
+            ClipboardProperty results = getSource().collect();
 
-        buf.append(header());
+            if (results != null && results.size() > 0) {
+//            buf.append(header());
+                header(meterBuf);
 
-        results.iterator().forEachRemaining(r -> {
-            buf.append(seriefy(((ClipboardProperty) r).getPageValue())).append("\n");
-        });
+                results.iterator().forEachRemaining(r -> {
+//                buf.append(seriefy(((ClipboardProperty) r).getPageValue())).append("\n");
+                    seriefy(meterBuf, ((ClipboardProperty) r).getPageValue()).append("\n");
+                });
+            }
+            // prevent partial meter appending
+            buf.append(meterBuf);
+            if (logger.isInfoEnabled()) {
+                logger.info(toString() + " promify succeeded - spent: " + (System.currentTimeMillis() - start));
+            }
+        } catch (Exception ex) {
+            logger.error(toString() + "promify failed", ex);
+        }
         return buf.toString();
     }
 
     String header() {
-        Writer writer = new StringWriter();
-        try {
-            writer.append("# HELP ").append(namify(getId())).append("\n");
-            writer.append(("# TYPE ")).append(namify(getId())).append("\n");
-        } catch (IOException ex) {
+        StringBuffer buf = new StringBuffer();
+        return header(buf).toString();
+    }
 
-        }
-        return writer.toString();
+    StringBuffer header(StringBuffer buf) {
+        buf.append("# HELP ").append(namify(getId())).append("\n");
+        buf.append(("# TYPE ")).append(namify(getId())).append(" ").append(typify(getId())).append("\n");
+        return buf;
     }
 
     protected String namify(Meter.Id meterId) {
-        return getConfig()
+        StringBuffer buf = new StringBuffer();
+        return namify(buf, meterId).toString();
+    }
+
+    protected StringBuffer namify(StringBuffer buf, Meter.Id meterId) {
+        buf.append(getConfig()
             .namingConvention()
-            .name(meterId.getName(), meterId.getType(), meterId.getBaseUnit());
+            .name(meterId.getName(), meterId.getType(), meterId.getBaseUnit()));
+        return buf;
     }
 
     protected String tagify(Iterable<Tag> tagIterable) {
+        StringBuffer buf = new StringBuffer();
+        return tagify(buf, tagIterable).toString();
+    }
+
+    protected StringBuffer tagify(StringBuffer buf, Iterable<Tag> tagIterable) {
         String tags = StreamSupport.stream(tagIterable.spliterator(), false)
             .map(t -> getConfig().namingConvention().tagKey(t.getKey()) + "=\"" + getConfig().namingConvention().tagValue(t.getValue()) + "\"")
             .collect(Collectors.joining(","));
-        return "{" + tags + "}";
+        if (!StringUtils.isBlank(tags)) {
+            buf.append("{").append(tags).append("}");
+        }
+        return buf;
+    }
+
+    protected String typify(Meter.Id meterId) {
+        Collector.Type promType = Collector.Type.UNTYPED;
+        switch (meterId.getType()) {
+            case COUNTER:
+                promType = Collector.Type.COUNTER;
+                break;
+            case GAUGE:
+                promType = Collector.Type.GAUGE;
+                break;
+            case DISTRIBUTION_SUMMARY:
+            case TIMER:
+                promType = Collector.Type.SUMMARY;
+        }
+        return promType.toString().toLowerCase();
     }
 
     @SuppressWarnings("unchecked")
     Iterable<Tag> propToTags(ClipboardProperty property) {
         Tags tags = Tags.empty();
         if (property != null) {
-            ((Iterator<ClipboardProperty>) property.iterator()).forEachRemaining(e -> tags.and(e.getName(), e.getStringValue()));
+            Iterator<ClipboardProperty> iter = (Iterator<ClipboardProperty>) property.iterator();
+            while (iter.hasNext()) {
+                ClipboardProperty e = iter.next();
+                tags = tags.and(e.getName(), e.getStringValue());
+            }
         }
         return tags;
     }
@@ -95,10 +151,7 @@ public abstract class AbstractPrpcMeter {
         private MeterRegistry.Config config;
 
         private PrpcSource source;
-        private String tagsPropName = "Tag";
-
-//        private Builder() {
-//        }
+        private String tagsPropName = PROP_NAME_TAG;
 
         public T id(Meter.Id id) {
             this.id = id;

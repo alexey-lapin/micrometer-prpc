@@ -1,6 +1,10 @@
 package ru.sbrf.pegi18.mon.prpc;
 
+import com.pega.pegarules.pub.runtime.ParameterPage;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,8 +15,16 @@ class DataPageSourceTest {
 
     @Test
     void test() {
-        DataPageSource source = DataPageSource.builder().ruleName("rn").build();
-        System.out.println(source.ruleName());
+//        ParameterPage params = new ParameterPage();
+//        params.putAll(new HashMap() {{
+//            put("z", "x");
+//        }});
+
+        DataPageSource source = DataPageSource.builder()
+            .ruleName("rn")
+//            .parameterPage(params)
+            .build();
+        System.out.println(source.parameterPage());
     }
 
 }
