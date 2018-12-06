@@ -130,8 +130,8 @@ public abstract class AbstractPrpcSource implements PrpcSource {
             if (logger.isInfoEnabled()) {
                 logger.info("Switch AG [" + currentAccessGroup + "] -> [" + name + "] succeeded - current: [" + getCurrentAccessGroup() + "]");
             }
-        } catch (Exception e) {
-            logger.error("Switch AG [" + currentAccessGroup + "] -> [" + name + "] failed - current: [" + getCurrentAccessGroup() + "]");
+        } catch (Exception ex) {
+            logger.error("Switch AG [" + currentAccessGroup + "] -> [" + name + "] failed - current: [" + getCurrentAccessGroup() + "]", ex);
         }
         return result;
     }
