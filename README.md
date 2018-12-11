@@ -1,1 +1,2 @@
-# micrometer-prpc
+# micrometer-registry-prpc
+[![lines](http://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=lines)](https://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=lines) [![coverage](http://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=coverage)](https://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=coverage) [![bugs](http://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=bugs)](https://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=bugs)
