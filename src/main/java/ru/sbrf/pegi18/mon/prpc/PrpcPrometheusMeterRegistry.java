@@ -1,9 +1,17 @@
-package io.micrometer.core.instrument;
+package ru.sbrf.pegi18.mon.prpc;
 
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
-import ru.sbrf.pegi18.mon.prpc.*;
+import ru.sbrf.pegi18.mon.prpc.meter.AbstractPrpcMeter;
+import ru.sbrf.pegi18.mon.prpc.meter.PrpcFunctionCounter;
+import ru.sbrf.pegi18.mon.prpc.meter.PrpcFunctionTimer;
+import ru.sbrf.pegi18.mon.prpc.meter.PrpcGauge;
+import ru.sbrf.pegi18.mon.prpc.source.PrpcSource;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +46,7 @@ public class PrpcPrometheusMeterRegistry extends PrometheusMeterRegistry {
     }
 
     public PrpcGauge gauge(String name, Iterable<Tag> tags, PrpcSource source, String tagsPropName, String valuePropName) {
-        Meter.Id id = new Meter.Id(name, Tags.of(tags), null, null, Meter.Type.GAUGE, null);
+        Meter.Id id = new Meter.Id(name, Tags.of(tags), null, null, Meter.Type.GAUGE);
         PrpcGauge meter = PrpcGauge.builder()
             .id(id)
             .source(source)
@@ -59,7 +67,7 @@ public class PrpcPrometheusMeterRegistry extends PrometheusMeterRegistry {
     }
 
     public PrpcFunctionCounter counter(String name, Iterable<Tag> tags, PrpcSource source, String tagsPropName, String totalValuePropName) {
-        Meter.Id id = new Meter.Id(name, Tags.of(tags), null, null, Meter.Type.COUNTER, null);
+        Meter.Id id = new Meter.Id(name, Tags.of(tags), null, null, Meter.Type.COUNTER);
         PrpcFunctionCounter meter = PrpcFunctionCounter.builder()
             .id(id)
             .source(source)
@@ -80,7 +88,7 @@ public class PrpcPrometheusMeterRegistry extends PrometheusMeterRegistry {
     }
 
     public PrpcFunctionTimer timer(String name, Iterable<Tag> tags, PrpcSource source, String tagsPropName, String countValuePropName, String sumValuePropName) {
-        Meter.Id id = new Meter.Id(name, Tags.of(tags), null, null, Meter.Type.TIMER, null);
+        Meter.Id id = new Meter.Id(name, Tags.of(tags), null, null, Meter.Type.TIMER);
         PrpcFunctionTimer meter = PrpcFunctionTimer.builder()
             .id(id)
             .source(source)
@@ -95,7 +103,7 @@ public class PrpcPrometheusMeterRegistry extends PrometheusMeterRegistry {
 
     @Override
     public String scrape() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         String scraped = map.entrySet()
             .stream()
 //            .parallel()

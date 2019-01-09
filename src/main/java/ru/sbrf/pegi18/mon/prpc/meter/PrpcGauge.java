@@ -1,14 +1,19 @@
-package ru.sbrf.pegi18.mon.prpc;
+package ru.sbrf.pegi18.mon.prpc.meter;
 
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import io.micrometer.core.instrument.Tags;
 
 /**
- *
+ * @author Alexey Lapin
  */
 public class PrpcGauge extends AbstractPrpcMeter {
 
     private String valuePropName;
+
+    private PrpcGauge(BuilderPrpcGauge builder) {
+        super(builder);
+        this.valuePropName = builder.valuePropName;
+    }
 
     public String getValuePropName() {
         return valuePropName;
@@ -16,16 +21,16 @@ public class PrpcGauge extends AbstractPrpcMeter {
 
     @Override
     public String seriefy(ClipboardPage page) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         return seriefy(buf, page).toString();
     }
 
     @Override
-    public StringBuffer seriefy(StringBuffer buf, ClipboardPage page) {
+    public StringBuilder seriefy(StringBuilder buf, ClipboardPage page) {
         long start = System.currentTimeMillis();
         namify(buf, getId());
         tagify(buf, Tags.of(propToTags(page.getIfPresent(getTagsPropName()))).and(getId().getTags()));
-        buf.append(" ");
+        buf.append(CHAR_SPACE);
         buf.append(page.getProperty(getValuePropName()).toDouble());
         if (logger.isDebugEnabled()) {
             logger.debug(toString() + " seriefy succeeded - spent: " + (System.currentTimeMillis() - start));
@@ -33,32 +38,36 @@ public class PrpcGauge extends AbstractPrpcMeter {
         return buf;
     }
 
-    public static Builder builder() {
-        return new PrpcGauge().new Builder();
+    public static BuilderPrpcGauge builder() {
+        return new BuilderPrpcGauge();
     }
 
-    public class Builder extends AbstractPrpcMeter.Builder<Builder> {
+    public static class BuilderPrpcGauge extends AbstractPrpcMeterBuilder<BuilderPrpcGauge> {
 
         private String valuePropName;
 
-        private Builder() {
+        private BuilderPrpcGauge() {
         }
 
-        public Builder valuePropName(String valuePropName) {
+        public BuilderPrpcGauge valuePropName(String valuePropName) {
             this.valuePropName = valuePropName;
             return self();
         }
 
+        @Override
+        protected BuilderPrpcGauge self() {
+            return this;
+        }
+
+        @Override
         public PrpcGauge build() {
-            build(PrpcGauge.this);
-            PrpcGauge.this.valuePropName = this.valuePropName;
-            return PrpcGauge.this;
+            return new PrpcGauge(this);
         }
     }
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         sb.append(getClass().getSimpleName());
         sb.append("[").append(getId()).append("]");
         return sb.toString();

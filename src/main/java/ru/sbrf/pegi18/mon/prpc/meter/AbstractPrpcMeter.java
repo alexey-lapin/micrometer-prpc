@@ -1,4 +1,4 @@
-package ru.sbrf.pegi18.mon.prpc;
+package ru.sbrf.pegi18.mon.prpc.meter;
 
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
@@ -10,28 +10,42 @@ import io.prometheus.client.Collector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.sbrf.pegi18.mon.prpc.source.PrpcSource;
 
 import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
+ * @author Alexey Lapin
  */
 public abstract class AbstractPrpcMeter {
+
+    private static final String PROM_HEADER_HELP = "# HELP ";
+    private static final String PROM_HEADER_TYPE = "# TYPE ";
+
+    protected static final char CHAR_CARRIAGE_RETURN = 10;
+    protected static final char CHAR_SPACE = 32;
 
     public static final String PROP_NAME_TAG = "Tag";
 
     protected final Logger logger = LogManager.getLogger(getClass());
 
-    private Meter.Id id;
-    private MeterRegistry.Config config;
+    private final Meter.Id id;
+    private final MeterRegistry.Config config;
+    private final PrpcSource source;
+    private final String tagsPropName;
 
-    private PrpcSource source;
-    private String tagsPropName;
+    protected AbstractPrpcMeter(AbstractPrpcMeterBuilder<?> builder) {
+        this.id = builder.id;
+        this.config = builder.config;
+        this.source = builder.source;
+        this.tagsPropName = builder.tagsPropName;
+    }
 
     public abstract String seriefy(ClipboardPage page);
 
-    public abstract StringBuffer seriefy(StringBuffer buf, ClipboardPage page);
+    public abstract StringBuilder seriefy(StringBuilder buf, ClipboardPage page);
 
     public Meter.Id getId() {
         return id;
@@ -52,20 +66,19 @@ public abstract class AbstractPrpcMeter {
     @SuppressWarnings("unchecked")
     public String promify() {
         long start = System.currentTimeMillis();
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         try {
-            StringBuffer meterBuf = new StringBuffer();
-            ClipboardProperty results = getSource().collect();
+            StringBuilder meterBuf = new StringBuilder();
+            ClipboardProperty results = getSource().collect().orElse(null);
 
             if (results != null && results.size() > 0) {
-//            buf.append(header());
                 header(meterBuf);
-
-                results.iterator().forEachRemaining(r -> {
-//                buf.append(seriefy(((ClipboardProperty) r).getPageValue())).append("\n");
-                    seriefy(meterBuf, ((ClipboardProperty) r).getPageValue()).append("\n");
-                });
+                if (results.isList() || results.isGroup()) {
+                    results.iterator().forEachRemaining(r -> seriefy(meterBuf, ((ClipboardProperty) r).getPageValue()).append(CHAR_CARRIAGE_RETURN));
+                } else if (results.isPage()) {
+                    seriefy(meterBuf, results.getPageValue()).append(CHAR_CARRIAGE_RETURN);
+                }
             }
             // prevent partial meter appending
             buf.append(meterBuf);
@@ -73,28 +86,28 @@ public abstract class AbstractPrpcMeter {
                 logger.info(toString() + " promify succeeded - spent: " + (System.currentTimeMillis() - start));
             }
         } catch (Exception ex) {
-            logger.error(toString() + "promify failed", ex);
+            logger.error(toString() + " promify failed", ex);
         }
         return buf.toString();
     }
 
     String header() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         return header(buf).toString();
     }
 
-    StringBuffer header(StringBuffer buf) {
-        buf.append("# HELP ").append(namify(getId())).append("\n");
-        buf.append(("# TYPE ")).append(namify(getId())).append(" ").append(typify(getId())).append("\n");
+    StringBuilder header(StringBuilder buf) {
+        buf.append(PROM_HEADER_HELP).append(namify(getId())).append(CHAR_CARRIAGE_RETURN);
+        buf.append(PROM_HEADER_TYPE).append(namify(getId())).append(CHAR_SPACE).append(typify(getId())).append(CHAR_CARRIAGE_RETURN);
         return buf;
     }
 
     protected String namify(Meter.Id meterId) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         return namify(buf, meterId).toString();
     }
 
-    protected StringBuffer namify(StringBuffer buf, Meter.Id meterId) {
+    protected StringBuilder namify(StringBuilder buf, Meter.Id meterId) {
         buf.append(getConfig()
             .namingConvention()
             .name(meterId.getName(), meterId.getType(), meterId.getBaseUnit()));
@@ -102,11 +115,11 @@ public abstract class AbstractPrpcMeter {
     }
 
     protected String tagify(Iterable<Tag> tagIterable) {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         return tagify(buf, tagIterable).toString();
     }
 
-    protected StringBuffer tagify(StringBuffer buf, Iterable<Tag> tagIterable) {
+    protected StringBuilder tagify(StringBuilder buf, Iterable<Tag> tagIterable) {
         String tags = StreamSupport.stream(tagIterable.spliterator(), false)
             .map(t -> getConfig().namingConvention().tagKey(t.getKey()) + "=\"" + getConfig().namingConvention().tagValue(t.getValue()) + "\"")
             .collect(Collectors.joining(","));
@@ -117,7 +130,7 @@ public abstract class AbstractPrpcMeter {
     }
 
     protected String typify(Meter.Id meterId) {
-        Collector.Type promType = Collector.Type.UNTYPED;
+        Collector.Type promType = null;
         switch (meterId.getType()) {
             case COUNTER:
                 promType = Collector.Type.COUNTER;
@@ -128,6 +141,10 @@ public abstract class AbstractPrpcMeter {
             case DISTRIBUTION_SUMMARY:
             case TIMER:
                 promType = Collector.Type.SUMMARY;
+                break;
+            default:
+                promType = Collector.Type.UNTYPED;
+                break;
         }
         return promType.toString().toLowerCase();
     }
@@ -145,11 +162,15 @@ public abstract class AbstractPrpcMeter {
         return tags;
     }
 
-    public abstract static class Builder<T extends Builder<T>> {
+    /**
+     * Fluent builder for prpc meters
+     *
+     * @param <T> hierarchical builder support
+     */
+    public abstract static class AbstractPrpcMeterBuilder<T extends AbstractPrpcMeterBuilder<T>> {
 
         private Meter.Id id;
         private MeterRegistry.Config config;
-
         private PrpcSource source;
         private String tagsPropName = PROP_NAME_TAG;
 
@@ -173,16 +194,14 @@ public abstract class AbstractPrpcMeter {
             return self();
         }
 
-        @SuppressWarnings("unchecked")
-        final T self() {
-            return (T) this;
-        }
+        /**
+         * @return actual builder
+         */
+        protected abstract T self();
 
-        void build(AbstractPrpcMeter meter) {
-            meter.id = this.id;
-            meter.config = this.config;
-            meter.source = this.source;
-            meter.tagsPropName = this.tagsPropName;
-        }
+        /**
+         * @return ready to use prpc meter object
+         */
+        public abstract AbstractPrpcMeter build();
     }
 }
