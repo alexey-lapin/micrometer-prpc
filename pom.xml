@@ -6,7 +6,7 @@
 
   <groupId>ru.sbrf.pegi18</groupId>
   <artifactId>micrometer-registry-prpc</artifactId>
-  <version>0.4</version>
+  <version>0.5</version>
 
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -27,6 +27,24 @@
       <groupId>com.pega.prpc.pega73</groupId>
       <artifactId>prpublic</artifactId>
       <version>7.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>prprivate</artifactId>
+      <version>7.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>prbootstrap</artifactId>
+      <version>7.3.0-77</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>prbootstrap-api</artifactId>
+      <version>7.3.0-77</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -55,6 +73,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>prenginext</artifactId>
+      <version>7.3</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>5.3.1</version>
@@ -79,10 +104,43 @@
       <version>2.23.0</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.11.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.1</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>sonar-maven-plugin</artifactId>

@@ -2,30 +2,21 @@ package ru.sbrf.pegi18.mon;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lapin2-aa
  */
 public class RegistryHolder {
 
-    private static RegistryHolder instance;
-    private static Map<String, MeterRegistry> holder = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String, MeterRegistry> holder = new ConcurrentHashMap<>();
 
     private RegistryHolder() {
     }
 
     public static RegistryHolder getInstance() {
-        if (instance == null) {
-            synchronized (RegistryHolder.class) {
-                if (instance == null) {
-                    instance = new RegistryHolder();
-                }
-            }
-        }
-        return instance;
+        return Holder.instance;
     }
 
     public void put(String name, MeterRegistry registry) {
@@ -40,4 +31,11 @@ public class RegistryHolder {
         holder.clear();
     }
 
+    public int size() {
+        return holder.size();
+    }
+
+    private static class Holder {
+        private static RegistryHolder instance = new RegistryHolder();
+    }
 }
