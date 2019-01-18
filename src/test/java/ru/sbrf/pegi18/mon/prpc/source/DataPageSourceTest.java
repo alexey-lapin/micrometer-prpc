@@ -1,5 +1,6 @@
 package ru.sbrf.pegi18.mon.prpc.source;
 
+import com.pega.pegarules.data.internal.clipboard.ClipboardPropertyFactory;
 import com.pega.pegarules.priv.PegaAPI;
 import com.pega.pegarules.pub.PRRuntimeException;
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -20,7 +22,8 @@ import static org.mockito.Mockito.*;
 
 class DataPageSourceTest {
 
-    private static final String TEST_RULE_NAME = "TestRule";
+    private static final String TEST_RULE_NAME1 = "TestRule1";
+    private static final String TEST_RULE_NAME2 = "TestRule2";
     private static final String TEST_RULE_CLASS = "Test-Rule-Class";
     private static final String TEST_AG_NAME = "TestAG:name";
     private static final String TEST_AG_NAME2 = "TestAG:name2";
@@ -46,7 +49,7 @@ class DataPageSourceTest {
         dataPage = mock(ClipboardPage.class);
 
         when(dataPage.getProperty(TEST_RESULTS_PROP)).thenReturn(resultsProp);
-        when(tools.findPage(eq(TEST_RULE_NAME), (ParameterPage) any())).thenReturn(dataPage);
+        when(tools.findPage(eq(TEST_RULE_NAME1), (ParameterPage) any())).thenReturn(dataPage);
 
         auth = mock(Authorization.class);
         when(tools.getAuthorizationHandle()).thenReturn(auth);
@@ -58,16 +61,16 @@ class DataPageSourceTest {
 
     @Test
     void should_builderCreatesCorrectSource_when_usingDefaultToolsSupplier() {
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
-            .ruleName(TEST_RULE_NAME)
+            .ruleName(TEST_RULE_NAME1)
             .accessGroupName(TEST_AG_NAME)
-            .resultsPropName(TEST_RESULTS_PROP)
-            .build();
+            .resultsPropName(TEST_RESULTS_PROP);
+        DataPageSource source = new DataPageSource(builder);
 
         assertAll(
             () -> assertThat(source.ruleClass()).isEqualTo(TEST_RULE_CLASS),
-            () -> assertThat(source.ruleName()).isEqualTo(TEST_RULE_NAME),
+            () -> assertThat(source.ruleName()).isEqualTo(TEST_RULE_NAME1),
             () -> assertThat(source.accessGroupName()).isEqualTo(TEST_AG_NAME),
             () -> assertThat(source.resultsPropName()).isEqualTo(TEST_RESULTS_PROP)
         );
@@ -76,23 +79,44 @@ class DataPageSourceTest {
     @Test
     void should_obtainReturnsOptionalContainingResultsProp() {
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.obtain()).containsSame(resultsProp);
     }
 
     @Test
-    void should_obtainReturnsEmptyOptional_when_toolsFindPageReturnsNull() {
-        when(tools.findPage(eq(TEST_RULE_NAME), (ParameterPage) any())).thenReturn(null);
+    @SuppressWarnings("Unchecked")
+    void should_obtainReturnsOptionalContainingPropertyWithPrimaryPage_when_noResultsPropNameProvided() {
+        when(tools.createPage(any(), any())).thenReturn(dataPage);
 
-        DataPageSource source = DataPageSource.builder()
+        ClipboardProperty wrapProp = mock(ClipboardProperty.class);
+        when(wrapProp.getPageValue()).thenReturn(dataPage);
+
+        ClipboardPropertyFactory cpf = mock(ClipboardPropertyFactory.class, RETURNS_DEEP_STUBS);
+        ClipboardPropertyFactory.setInstance(cpf);
+
+        when(cpf.getMostSuitableClipboardObjectMocked(any(), eq('S'), any())).thenReturn(wrapProp);
+
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
+            .ruleClass(TEST_RULE_CLASS)
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
+
+        assertThat(source.obtain().get().getPageValue()).isSameAs(dataPage);
+    }
+
+    @Test
+    void should_obtainReturnsEmptyOptional_when_toolsFindPageReturnsNull() {
+        when(tools.findPage(eq(TEST_RULE_NAME1), (ParameterPage) any())).thenReturn(null);
+
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .toolsSupplier(() -> tools)
-            .ruleName(TEST_RULE_NAME)
-            .build();
+            .ruleName(TEST_RULE_NAME1);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.obtain()).isEmpty();
     }
@@ -101,9 +125,9 @@ class DataPageSourceTest {
     void should_obtainReturnsEmptyOptional_when_toolsFindPageThrowsException() {
         when(tools.findPage(any(), (ParameterPage) any())).thenThrow(PRRuntimeException.class);
 
-        DataPageSource source = DataPageSource.builder()
-            .toolsSupplier(() -> tools)
-            .build();
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.obtain()).isEmpty();
     }
@@ -111,11 +135,11 @@ class DataPageSourceTest {
     @Test
     void should_collectReturnsOptionalContainingResultsProp2() {
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.collect()).containsSame(resultsProp);
     }
@@ -125,11 +149,11 @@ class DataPageSourceTest {
 
         when(auth.getCurrentAccessGroup()).thenReturn(TEST_AG_NAME2);
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.collect()).containsSame(resultsProp);
         verify(auth, times(0)).setActiveAccessGroup(any(), any());
@@ -140,12 +164,12 @@ class DataPageSourceTest {
 
         when(auth.getCurrentAccessGroup()).thenReturn(TEST_AG_NAME2);
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .accessGroupName(TEST_AG_NAME2)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.collect()).containsSame(resultsProp);
         verify(auth, times(0)).setActiveAccessGroup(any(), any());
@@ -157,12 +181,12 @@ class DataPageSourceTest {
         when(auth.getCurrentAccessGroup()).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME).thenReturn(TEST_AG_NAME2);
         when(auth.setActiveAccessGroup(any(), any())).thenReturn(true);
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .accessGroupName(TEST_AG_NAME)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.collect()).containsSame(resultsProp);
         verify(auth, times(2)).setActiveAccessGroup(any(), any());
@@ -173,12 +197,12 @@ class DataPageSourceTest {
 
         when(auth.getCurrentAccessGroup()).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME).thenReturn(TEST_AG_NAME2);
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .accessGroupName(TEST_AG_NAME)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.collect()).containsSame(resultsProp);
         verify(auth, times(1)).setActiveAccessGroup(any(), any());
@@ -190,12 +214,12 @@ class DataPageSourceTest {
         when(tools.getThread().getRequestor().isBatchType()).thenReturn(true);
         when(auth.getCurrentAccessGroup()).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME).thenReturn(TEST_AG_NAME2);
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .accessGroupName(TEST_AG_NAME)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.collect()).containsSame(resultsProp);
         verify(auth, times(0)).setActiveAccessGroup(any(), any());
@@ -208,30 +232,86 @@ class DataPageSourceTest {
         when(auth.setActiveAccessGroup(any(), any())).thenThrow(PRRuntimeException.class);
         when(auth.getCurrentAccessGroup()).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME2).thenReturn(TEST_AG_NAME).thenReturn(TEST_AG_NAME2);
 
-        DataPageSource source = DataPageSource.builder()
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
             .ruleClass(TEST_RULE_CLASS)
             .accessGroupName(TEST_AG_NAME)
             .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+            .toolsSupplier(() -> tools);
+        DataPageSource source = new DataPageSource(builder);
 
         assertThat(source.collect()).containsSame(resultsProp);
         verify(auth, times(1)).setActiveAccessGroup(any(), any());
     }
 
+    //    @Test
+//    void should_collectReturnsOptionalContainingResultsPropAndInvokeSwitchAG1_when_getCurrentAccessGroupThrows() throws Exception {
+//
+//        when(auth.getCurrentAccessGroup()).thenThrow(PRRuntimeException.class);
+//
+//        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder()
+//            .ruleClass(TEST_RULE_CLASS)
+//            .accessGroupName(TEST_AG_NAME)
+//            .resultsPropName(TEST_RESULTS_PROP)
+//            .toolsSupplier(() -> tools);
+//            DataPageSource source = new DataPageSource(builder);
+//
+//        assertThat(source.collect()).containsSame(resultsProp);
+//        verify(auth, times(0)).setActiveAccessGroup(any(), any());
+//    }
     @Test
-    void should_collectReturnsOptionalContainingResultsPropAndInvokeSwitchAG1_when_getCurrentAccessGroupThrows() throws Exception {
+    void should_builderReturnSourceFromCache_when_sourceHasRefAndGC() {
+        List<DataPageSource> sources = new ArrayList<>();
 
-        when(auth.getCurrentAccessGroup()).thenThrow(PRRuntimeException.class);
+        DataPageSource source1 = DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build();
+        sources.add(source1);
 
-        DataPageSource source = DataPageSource.builder()
-            .ruleClass(TEST_RULE_CLASS)
-            .accessGroupName(TEST_AG_NAME)
-            .resultsPropName(TEST_RESULTS_PROP)
-            .toolsSupplier(() -> tools)
-            .build();
+        DataPageSource source2 = DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build();
+        sources.add(source2);
 
-        assertThat(source.collect()).containsSame(resultsProp);
-        verify(auth, times(0)).setActiveAccessGroup(any(), any());
+        DataPageSource source3 = DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build();
+        sources.add(source3);
+
+        DataPageSource source4 = DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build();
+        sources.add(source4);
+
+        assertThat(source1).isSameAs(source2).isSameAs(source3).isSameAs(source4);
+
+        System.gc();
+        DataPageSource source5 = DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build();
+
+        assertThat(source1).isSameAs(source5);
+    }
+
+    @Test
+    void should_builderBuildsNewSource_when_noRefToInstanceAndGC() {
+        List<DataPageSource> sources = new ArrayList<>();
+
+        sources.add(DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build());
+        sources.add(DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build());
+        sources.add(DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build());
+        sources.add(DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build());
+
+        assertThat(sources.get(0)).isSameAs(sources.get(1)).isSameAs(sources.get(2)).isSameAs(sources.get(3));
+
+        int hash = sources.get(0).hashCode();
+
+        sources.clear();
+        System.gc();
+
+        DataPageSource source = DataPageSource.builder().ruleClass(TEST_RULE_CLASS).ruleName(TEST_RULE_NAME1).build();
+
+        assertThat(source.hashCode()).isNotEqualTo(hash);
+    }
+
+    @Test
+    void should_builderBeEqualCorrectly() {
+        DataPageSource.DataPageSourceBuilder builder = DataPageSource.builder().ruleName(TEST_RULE_NAME1);
+        assertAll(
+            () -> assertThat(DataPageSource.builder().ruleName(TEST_RULE_NAME1)).isNotEqualTo(null),
+            () -> assertThat(DataPageSource.builder().ruleName(TEST_RULE_NAME1)).isNotEqualTo(""),
+            () -> assertThat(DataPageSource.builder().ruleName(TEST_RULE_NAME1)).isNotEqualTo(DataPageSource.builder().ruleName(TEST_RULE_NAME2)),
+            () -> assertThat(DataPageSource.builder().ruleName(TEST_RULE_NAME1)).isEqualTo(DataPageSource.builder().ruleName(TEST_RULE_NAME1)),
+            () -> assertThat(builder).isEqualTo(builder)
+        );
     }
 }

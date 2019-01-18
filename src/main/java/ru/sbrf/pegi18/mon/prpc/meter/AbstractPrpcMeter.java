@@ -43,8 +43,6 @@ public abstract class AbstractPrpcMeter {
         this.tagsPropName = builder.tagsPropName;
     }
 
-    public abstract String seriefy(ClipboardPage page);
-
     public abstract StringBuilder seriefy(StringBuilder buf, ClipboardPage page);
 
     public Meter.Id getId() {
@@ -82,18 +80,11 @@ public abstract class AbstractPrpcMeter {
             }
             // prevent partial meter appending
             buf.append(meterBuf);
-            if (logger.isInfoEnabled()) {
-                logger.info(toString() + " promify succeeded - spent: " + (System.currentTimeMillis() - start));
-            }
+            logger.info(() -> toString() + " promify succeeded - spent: " + (System.currentTimeMillis() - start));
         } catch (Exception ex) {
             logger.error(toString() + " promify failed", ex);
         }
         return buf.toString();
-    }
-
-    String header() {
-        StringBuilder buf = new StringBuilder();
-        return header(buf).toString();
     }
 
     StringBuilder header(StringBuilder buf) {

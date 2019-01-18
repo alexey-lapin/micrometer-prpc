@@ -1,13 +1,14 @@
 package ru.sbrf.pegi18.mon.prpc.source;
 
 import com.pega.pegarules.data.internal.clipboard.ClipboardPropertyFactory;
-import com.pega.pegarules.priv.authorization.PegaAuthorization;
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
+import com.pega.pegarules.session.internal.authorization.Authorization;
+import com.pega.pegarules.session.internal.authorization.SessionAuthorization;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,9 +48,7 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
 
     @Override
     public Optional<ClipboardProperty> collect() {
-        if (logger.isDebugEnabled()) {
-            logger.debug(toString() + " collect using executable " + tools());
-        }
+        logger.debug(() -> toString() + " collect using executable " + tools());
 
         String currentAccessGroup = getCurrentAccessGroup();
         boolean switched = false;
@@ -99,6 +98,33 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
             this.resultsPropName = resultsPropName;
             return self();
         }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(ruleClass)
+                .append(ruleName)
+                .append(accessGroupName)
+                .append(resultsPropName)
+                .hashCode();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == null) return false;
+            if (other == this) return true;
+            if (other.getClass() != getClass()) return false;
+
+            AbstractRulePrpcSourceBuilder builder = (AbstractRulePrpcSourceBuilder) other;
+            return new EqualsBuilder()
+                .appendSuper(super.equals(other))
+                .append(ruleClass, builder.ruleClass)
+                .append(ruleName, builder.ruleName)
+                .append(accessGroupName, builder.accessGroupName)
+                .append(resultsPropName, builder.resultsPropName)
+                .isEquals();
+        }
     }
 
     protected ClipboardProperty wrap(ClipboardPage page) {
@@ -113,22 +139,23 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
     private boolean switchAccessGroup(String name) {
         boolean result = false;
 
-        PegaAuthorization auth = (PegaAuthorization) tools().getAuthorizationHandle();
+        Authorization auth = (Authorization) tools().getAuthorizationHandle();
         boolean isBatch = tools().getThread().getRequestor().isBatchType();
 
         String currentAccessGroup = null;
 
         try {
             currentAccessGroup = getCurrentAccessGroup();
+            String ag = currentAccessGroup;
 
-            Object sauth = MethodUtils.invokeMethod(auth, "getSessionAuthorization");
+            SessionAuthorization sauth = auth.getSessionAuthorization();
             //get copy of available access groups
-            List<String> list = new ArrayList((List<String>) MethodUtils.invokeMethod(sauth, "getAvailableAccessGroups"));
+            List<String> list = sauth.getAvailableAccessGroups();
             if (!list.contains(name)) {
                 list.add(name);
             }
 
-            MethodUtils.invokeMethod(auth, "setAvailableAccessGroups", list, currentAccessGroup);
+            auth.setAvailableAccessGroups(list, currentAccessGroup);
 
             if (isBatch) {
                 auth.replaceAccessGroup(tools().getThread(), name);
@@ -136,9 +163,8 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
             } else {
                 result = auth.setActiveAccessGroup(tools().getThread(), name);
             }
-            if (logger.isInfoEnabled()) {
-                logger.info("Switch AG [" + currentAccessGroup + "] -> [" + name + "] succeeded - current: [" + getCurrentAccessGroup() + "]");
-            }
+            logger.info(() -> "Switch AG [" + ag + "] -> [" + name + "] succeeded - current: [" + getCurrentAccessGroup() + "]");
+
         } catch (Exception ex) {
             logger.error("Switch AG [" + currentAccessGroup + "] -> [" + name + "] failed - current: [" + getCurrentAccessGroup() + "]", ex);
         }
@@ -146,13 +172,7 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
     }
 
     private String getCurrentAccessGroup() {
-        PegaAuthorization auth = (PegaAuthorization) tools().getAuthorizationHandle();
-        String currentAccessGroup = null;
-        try {
-            currentAccessGroup = (String) MethodUtils.invokeMethod(auth, "getCurrentAccessGroup");
-        } catch (Exception ex) {
-            logger.error("Failed to get current AG", ex);
-        }
-        return currentAccessGroup;
+        Authorization auth = (Authorization) tools().getAuthorizationHandle();
+        return auth.getCurrentAccessGroup();
     }
 }

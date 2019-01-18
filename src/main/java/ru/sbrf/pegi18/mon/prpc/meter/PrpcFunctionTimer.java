@@ -29,12 +29,6 @@ public class PrpcFunctionTimer extends AbstractPrpcMeter {
     }
 
     @Override
-    public String seriefy(ClipboardPage page) {
-        StringBuilder buf = new StringBuilder();
-        return seriefy(buf, page).toString();
-    }
-
-    @Override
     public StringBuilder seriefy(StringBuilder buf, ClipboardPage page) {
         buf.append(namify(getId())).append(SUFFIX_COUNT);
         buf.append(tagify(Tags.of(propToTags(page.getIfPresent(getTagsPropName()))).and(getId().getTags())));

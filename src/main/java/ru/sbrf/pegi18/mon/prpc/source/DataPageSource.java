@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public class DataPageSource extends AbstractRulePrpcSource {
 
-    private DataPageSource(AbstractRulePrpcSourceBuilder builder) {
+    DataPageSource(AbstractRulePrpcSourceBuilder builder) {
         super(builder);
     }
 
@@ -51,7 +51,7 @@ public class DataPageSource extends AbstractRulePrpcSource {
 
         @Override
         public DataPageSource build() {
-            return new DataPageSource(this);
+            return (DataPageSource) cached(k -> new DataPageSource(this));
         }
     }
 

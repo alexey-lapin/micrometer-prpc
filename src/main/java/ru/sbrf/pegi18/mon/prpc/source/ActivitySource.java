@@ -2,6 +2,7 @@ package ru.sbrf.pegi18.mon.prpc.source;
 
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
 
@@ -12,7 +13,7 @@ import java.util.Optional;
  */
 public class ActivitySource extends AbstractRulePrpcSource {
 
-    private ActivitySource(ActivitySourceBuilder builder) {
+    ActivitySource(ActivitySourceBuilder builder) {
         super(builder);
     }
 
@@ -23,7 +24,11 @@ public class ActivitySource extends AbstractRulePrpcSource {
         try {
             primaryPage = tools().createPage(ruleClass(), null);
             tools().invokeActivity(primaryPage, parameterPage(), ruleName(), ruleClass(), "");
-            resultsProp = primaryPage.getProperty(resultsPropName());
+            if (StringUtils.isBlank(resultsPropName())) {
+                resultsProp = wrap(primaryPage);
+            } else {
+                resultsProp = primaryPage.getProperty(resultsPropName());
+            }
         } catch (Exception ex) {
             logger.error(toString() + " obtain failed", ex);
         } finally {
@@ -54,7 +59,7 @@ public class ActivitySource extends AbstractRulePrpcSource {
 
         @Override
         public ActivitySource build() {
-            return new ActivitySource(this);
+            return (ActivitySource) cached(k -> new ActivitySource(this));
         }
     }
 

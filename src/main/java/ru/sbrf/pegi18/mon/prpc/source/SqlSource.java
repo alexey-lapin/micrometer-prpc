@@ -2,6 +2,8 @@ package ru.sbrf.pegi18.mon.prpc.source;
 
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Optional;
 
@@ -42,7 +44,6 @@ public class SqlSource extends AbstractPrpcSource {
         try {
             browsePage = tools().createPage(CLASS_CODE_PEGA_LIST, PROP_SQLSOURCEBROWSEPAGE);
             browsePage.putString(PROP_PYMAXRECORDS, String.valueOf(maxRecords()));
-            // TODO: use params
             tools().getDatabase().executeRDB(queryString(), browsePage);
             resultsProp = browsePage.getProperty(PROP_PXRESULTS);
         } catch (Exception ex) {
@@ -87,7 +88,30 @@ public class SqlSource extends AbstractPrpcSource {
 
         @Override
         public SqlSource build() {
-            return new SqlSource(this);
+            return (SqlSource) cached(k -> new SqlSource(this));
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(queryString)
+                .append(maxRecords)
+                .hashCode();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == null) return false;
+            if (other == this) return true;
+            if (other.getClass() != getClass()) return false;
+
+            SqlSourceBuilder builder = (SqlSourceBuilder) other;
+            return new EqualsBuilder()
+                .appendSuper(super.equals(other))
+                .append(queryString, builder.queryString)
+                .append(maxRecords, builder.maxRecords)
+                .isEquals();
         }
     }
 }

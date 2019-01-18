@@ -23,6 +23,9 @@ class SqlSourceTest {
 
     private static final String PROP_PXRESULTS = "pxResults";
 
+    private static final String CONST_QUERY1 = "query1";
+    private static final String CONST_QUERY2 = "query2";
+
     private PegaAPI tools;
 
     @BeforeEach
@@ -39,6 +42,27 @@ class SqlSourceTest {
     void should_collectReturnsOptionalContainingResultsProp() throws Exception {
         ClipboardProperty resultsProp = mock(ClipboardProperty.class);
         ClipboardPage browsePage = mock(ClipboardPage.class);
+
+        assertThat(browsePage.getProperty(PROP_PXRESULTS)).isNull();
+
+        when(tools.createPage(any(), any())).thenReturn(browsePage);
+        when(tools.getDatabase().executeRDB((String) any(), any())).then(invocationOnMock -> {
+            when(browsePage.getProperty(PROP_PXRESULTS)).thenReturn(resultsProp);
+            return 0;
+        });
+
+        SqlSource.SqlSourceBuilder builder = SqlSource.builder()
+            .toolsSupplier(() -> tools);
+        SqlSource source = new SqlSource(builder);
+
+        assertThat(source.collect()).containsSame(resultsProp);
+    }
+
+    @Test
+    void should_collectReturnsOptionalContainingResultsProp_when_removeFromClipboardThrowsException() throws Exception {
+        ClipboardProperty resultsProp = mock(ClipboardProperty.class);
+        ClipboardPage browsePage = mock(ClipboardPage.class);
+        when(browsePage.removeFromClipboard()).thenThrow(PRRuntimeException.class);
 
         assertThat(browsePage.getProperty(PROP_PXRESULTS)).isNull();
 
@@ -81,7 +105,7 @@ class SqlSourceTest {
     @SuppressWarnings("unchecked")
     void should_builderCreatesCorrectSource_when_usingDefaultToolsSupplier() {
         int maxRecords = 10;
-        String queryString = "query";
+        String queryString = CONST_QUERY1;
         ParameterPage pp = new ParameterPage();
         pp.putString("key", "value");
 
@@ -114,24 +138,60 @@ class SqlSourceTest {
         assertThat(source.tools()).isSameAs(tools);
     }
 
-//    @Test
-//    void vv() {
-//        List<SqlSource> sources = new ArrayList<>();
-//
-//        SqlSource source1 = SqlSource.builder().queryString("query").build();
-//        sources.add(source1);
-//        SqlSource source2 = SqlSource.builder().queryString("query").build();
-//        sources.add(source2);
-//        SqlSource source3 = SqlSource.builder().queryString("query").build();
-//        sources.add(source3);
-//        SqlSource source4 = SqlSource.builder().queryString("query").build();
-//        sources.add(source4);
-//
-//        assertThat(source1).isSameAs(source2).isSameAs(source3).isSameAs(source4);
-//
-////        System.gc();
-////        SqlSource source5 = SqlSource.builder().queryString("query").build();
-////
-////        assertThat(source1).isSameAs(source5);
-//    }
+    @Test
+    void should_builderReturnSourceFromCache_when_sourceHasRefAndGC() {
+        List<SqlSource> sources = new ArrayList<>();
+
+        SqlSource source1 = SqlSource.builder().queryString(CONST_QUERY1).build();
+        sources.add(source1);
+
+        SqlSource source2 = SqlSource.builder().queryString(CONST_QUERY1).build();
+        sources.add(source2);
+
+        SqlSource source3 = SqlSource.builder().queryString(CONST_QUERY1).build();
+        sources.add(source3);
+
+        SqlSource source4 = SqlSource.builder().queryString(CONST_QUERY1).build();
+        sources.add(source4);
+
+        assertThat(source1).isSameAs(source2).isSameAs(source3).isSameAs(source4);
+
+        System.gc();
+        SqlSource source5 = SqlSource.builder().queryString(CONST_QUERY1).build();
+
+        assertThat(source1).isSameAs(source5);
+    }
+
+    @Test
+    void should_builderBuildsNewSource_when_noRefToInstanceAndGC() {
+        List<SqlSource> sources = new ArrayList<>();
+
+        sources.add(SqlSource.builder().queryString(CONST_QUERY1).build());
+        sources.add(SqlSource.builder().queryString(CONST_QUERY1).build());
+        sources.add(SqlSource.builder().queryString(CONST_QUERY1).build());
+        sources.add(SqlSource.builder().queryString(CONST_QUERY1).build());
+
+        assertThat(sources.get(0)).isSameAs(sources.get(1)).isSameAs(sources.get(2)).isSameAs(sources.get(3));
+
+        int hash = sources.get(0).hashCode();
+
+        sources.clear();
+        System.gc();
+
+        SqlSource source = SqlSource.builder().queryString(CONST_QUERY1).build();
+
+        assertThat(source.hashCode()).isNotEqualTo(hash);
+    }
+
+    @Test
+    void should_builderBeEqualCorrectly() {
+        SqlSource.SqlSourceBuilder builder = SqlSource.builder().queryString(CONST_QUERY1);
+        assertAll(
+            () -> assertThat(SqlSource.builder().queryString(CONST_QUERY1)).isNotEqualTo(null),
+            () -> assertThat(SqlSource.builder().queryString(CONST_QUERY1)).isNotEqualTo(""),
+            () -> assertThat(SqlSource.builder().queryString(CONST_QUERY1)).isNotEqualTo(SqlSource.builder().queryString(CONST_QUERY2)),
+            () -> assertThat(SqlSource.builder().queryString(CONST_QUERY1)).isEqualTo(SqlSource.builder().queryString(CONST_QUERY1)),
+            () -> assertThat(builder).isEqualTo(builder)
+        );
+    }
 }

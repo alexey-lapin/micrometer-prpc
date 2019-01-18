@@ -20,21 +20,13 @@ public class PrpcGauge extends AbstractPrpcMeter {
     }
 
     @Override
-    public String seriefy(ClipboardPage page) {
-        StringBuilder buf = new StringBuilder();
-        return seriefy(buf, page).toString();
-    }
-
-    @Override
     public StringBuilder seriefy(StringBuilder buf, ClipboardPage page) {
         long start = System.currentTimeMillis();
         namify(buf, getId());
         tagify(buf, Tags.of(propToTags(page.getIfPresent(getTagsPropName()))).and(getId().getTags()));
         buf.append(CHAR_SPACE);
         buf.append(page.getProperty(getValuePropName()).toDouble());
-        if (logger.isDebugEnabled()) {
-            logger.debug(toString() + " seriefy succeeded - spent: " + (System.currentTimeMillis() - start));
-        }
+        logger.debug(() -> toString() + " seriefy succeeded - spent: " + (System.currentTimeMillis() - start));
         return buf;
     }
 

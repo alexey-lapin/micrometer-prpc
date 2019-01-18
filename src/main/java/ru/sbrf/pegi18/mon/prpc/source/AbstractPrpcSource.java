@@ -1,12 +1,18 @@
 package ru.sbrf.pegi18.mon.prpc.source;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.pega.pegarules.priv.PegaAPI;
 import com.pega.pegarules.pub.context.ThreadContainer;
 import com.pega.pegarules.pub.runtime.ParameterPage;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -42,6 +48,8 @@ public abstract class AbstractPrpcSource implements PrpcSource {
      * @param <T> hierarchical builder support
      */
     public abstract static class AbstractPrpcSourceBuilder<T extends AbstractPrpcSourceBuilder<T>> {
+        private static Cache<Integer, PrpcSource> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MINUTES).weakValues().build();
+
         private Supplier<? extends PegaAPI> toolsSupplier = DEFAULT_PEGAAPI_SUPPLIER;
         private ParameterPage parameterPage;
 
@@ -66,5 +74,29 @@ public abstract class AbstractPrpcSource implements PrpcSource {
          * @return ready to use prpc source object
          */
         public abstract AbstractPrpcSource build();
+
+        protected PrpcSource cached(Function<? super Integer, ? extends PrpcSource> mappingFunction) {
+            return cache.asMap().computeIfAbsent(hashCode(), mappingFunction);
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder()
+                .append(getClass().getName())
+                .append(parameterPage)
+                .hashCode();
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == null) return false;
+            if (other == this) return true;
+            if (other.getClass() != getClass()) return false;
+
+            AbstractPrpcSourceBuilder builder = (AbstractPrpcSourceBuilder) other;
+            return new EqualsBuilder()
+                .append(parameterPage, builder.parameterPage)
+                .isEquals();
+        }
     }
 }

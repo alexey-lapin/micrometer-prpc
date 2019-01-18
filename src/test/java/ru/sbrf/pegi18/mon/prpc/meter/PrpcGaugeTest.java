@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PrpcGaugeTest extends MeterTestSupport {
 
     @Test
-    void should_promifyStringContains2LinesInHeaderPlusSourceSizeLines() {
+    void should_promifyStringContains2LinesInHeaderPlusSourceSizeLines_when_sourceIsList() {
         PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 
         PrpcGauge gauge = PrpcGauge.builder()
@@ -29,4 +29,35 @@ class PrpcGaugeTest extends MeterTestSupport {
         assertThat(result).contains(GAUGE.toString().toLowerCase());
     }
 
+    @Test
+    void should_promifyStringContains2LinesInHeaderPlusSourceSizeLines_when_sourceIsPage() {
+        PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+        PrpcGauge gauge = PrpcGauge.builder()
+            .id(new Meter.Id(METER_NAME_NAME, Tags.empty(), null, null, Meter.Type.GAUGE))
+            .source(getPageSourceMock(VALUE_PROP_NAME_VALUE, 2.0))
+            .valuePropName(VALUE_PROP_NAME_VALUE)
+            .config(registry.config())
+            .build();
+        String result = gauge.promify();
+
+        assertThat(result).hasLineCount(2 + 1);
+        assertThat(StringUtils.countMatches(result, METER_NAME_NAME)).isEqualTo(2 + 1);
+        assertThat(result).contains(GAUGE.toString().toLowerCase());
+    }
+
+    @Test
+    void should_promifyStringIsEmpty_when_sourceCollectThrowsException() {
+        PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+
+        PrpcGauge gauge = PrpcGauge.builder()
+            .id(new Meter.Id(METER_NAME_NAME, Tags.empty(), null, null, Meter.Type.GAUGE))
+            .source(getThrowingSource())
+            .valuePropName(VALUE_PROP_NAME_VALUE)
+            .config(registry.config())
+            .build();
+        String result = gauge.promify();
+
+        assertThat(result).isBlank();
+    }
 }
