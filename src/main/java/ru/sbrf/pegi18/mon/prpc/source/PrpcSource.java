@@ -14,6 +14,9 @@ import java.util.Optional;
  */
 public interface PrpcSource {
 
+
+    Optional<ClipboardProperty> get();
+
     /**
      * @return {@code Optional ClipboardProperty} that contains results of requested data
      */

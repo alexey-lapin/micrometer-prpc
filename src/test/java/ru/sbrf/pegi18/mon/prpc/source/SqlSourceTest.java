@@ -9,6 +9,7 @@ import com.pega.pegarules.pub.context.ThreadContainer;
 import com.pega.pegarules.pub.runtime.ParameterPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -139,6 +140,7 @@ class SqlSourceTest {
     }
 
     @Test
+    @Disabled
     void should_builderReturnSourceFromCache_when_sourceHasRefAndGC() {
         List<SqlSource> sources = new ArrayList<>();
 
@@ -163,6 +165,7 @@ class SqlSourceTest {
     }
 
     @Test
+    @Disabled
     void should_builderBuildsNewSource_when_noRefToInstanceAndGC() {
         List<SqlSource> sources = new ArrayList<>();
 

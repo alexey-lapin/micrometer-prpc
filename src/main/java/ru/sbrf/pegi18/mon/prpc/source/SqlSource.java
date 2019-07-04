@@ -4,7 +4,9 @@ import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import ru.sbrf.pegi18.mon.prpc.TagsUtils;
 
+import java.util.Iterator;
 import java.util.Optional;
 
 /**
@@ -45,7 +47,19 @@ public class SqlSource extends AbstractPrpcSource {
             browsePage = tools().createPage(CLASS_CODE_PEGA_LIST, PROP_SQLSOURCEBROWSEPAGE);
             browsePage.putString(PROP_PYMAXRECORDS, String.valueOf(maxRecords()));
             tools().getDatabase().executeRDB(queryString(), browsePage);
-            resultsProp = browsePage.getProperty(PROP_PXRESULTS);
+            if (isGroupResult()) {
+                ClipboardProperty p = browsePage.getIfPresent(PROP_PXRESULTS);
+                if (p != null) {
+                    ClipboardProperty g = browsePage.getProperty("pxPages");
+                    ((Iterator<ClipboardProperty>) p.iterator()).forEachRemaining(item -> {
+                        g.add(TagsUtils.id(item.getProperty("Tag")), item);
+                    });
+                    resultsProp = g;
+                }
+
+            } else {
+                resultsProp = browsePage.getProperty(PROP_PXRESULTS);
+            }
         } catch (Exception ex) {
             logger.error("Failed to collect", ex);
         } finally {
@@ -62,6 +76,15 @@ public class SqlSource extends AbstractPrpcSource {
 
     public static SqlSourceBuilder builder() {
         return new SqlSourceBuilder();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+            .appendSuper(super.hashCode())
+            .append(queryString)
+            .append(maxRecords)
+            .hashCode();
     }
 
     public static class SqlSourceBuilder extends AbstractPrpcSourceBuilder<SqlSourceBuilder> {
@@ -94,7 +117,7 @@ public class SqlSource extends AbstractPrpcSource {
         @Override
         public int hashCode() {
             return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
+//                .appendSuper(super.hashCode())
                 .append(queryString)
                 .append(maxRecords)
                 .hashCode();

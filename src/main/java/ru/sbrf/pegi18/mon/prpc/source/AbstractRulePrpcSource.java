@@ -101,13 +101,14 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
 
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(ruleClass)
-                .append(ruleName)
-                .append(accessGroupName)
-                .append(resultsPropName)
-                .hashCode();
+//            return new HashCodeBuilder()
+//                .appendSuper(super.hashCode())
+//                .append(ruleClass)
+//                .append(ruleName)
+//                .append(accessGroupName)
+//                .append(resultsPropName)
+//                .hashCode();
+            return computeHash(super.hashCode(), ruleClass, ruleName, accessGroupName, resultsPropName);
         }
 
         @Override
@@ -135,7 +136,7 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
         return prop;
     }
 
-    @SuppressWarnings("unchecked")
+//    @SuppressWarnings("unchecked")
     private boolean switchAccessGroup(String name) {
         boolean result = false;
 
@@ -174,5 +175,20 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
     private String getCurrentAccessGroup() {
         Authorization auth = (Authorization) tools().getAuthorizationHandle();
         return auth.getCurrentAccessGroup();
+    }
+
+    @Override
+    public int hashCode() {
+        return computeHash(super.hashCode(), ruleClass, ruleName, accessGroupName, resultsPropName);
+    }
+
+    private static int computeHash(int a0, String a1, String a2, String a3, String a4) {
+        return new HashCodeBuilder()
+            .appendSuper(a0)
+            .append(a1)
+            .append(a2)
+            .append(a3)
+            .append(a4)
+            .hashCode();
     }
 }
