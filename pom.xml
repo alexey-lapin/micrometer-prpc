@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>ru.sbrf.pegi18</groupId>
-  <artifactId>micrometer-registry-prpc</artifactId>
-  <version>0.6</version>
+  <groupId>org.pega.metrics</groupId>
+  <artifactId>micrometer-prpc</artifactId>
+  <version>0.7</version>
 
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -18,32 +18,12 @@
   <dependencies>
     <dependency>
       <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus</artifactId>
+      <artifactId>micrometer-core</artifactId>
       <version>1.1.0</version>
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-influx</artifactId>
-      <version>1.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-elastic</artifactId>
-      <version>1.1.0</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.pega.prpc.pega73</groupId>
-      <artifactId>guava</artifactId>
-      <version>19.0</version>
-      <scope>provided</scope>
-    </dependency>
-
+    <!-- Pega PRPC dependencies -->
     <dependency>
       <groupId>com.pega.prpc.pega73</groupId>
       <artifactId>prpublic</artifactId>
@@ -58,22 +38,24 @@
     </dependency>
     <dependency>
       <groupId>com.pega.prpc.pega73</groupId>
-      <artifactId>prbootstrap</artifactId>
-      <version>7.3.0-77</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.pega.prpc.pega73</groupId>
-      <artifactId>prbootstrap-api</artifactId>
-      <version>7.3.0-77</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.pega.prpc.pega73</groupId>
       <artifactId>pricu2jdk</artifactId>
       <version>7.3</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>prenginext</artifactId>
+      <version>7.3</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>guava</artifactId>
+      <version>19.0</version>
+      <scope>provided</scope>
+    </dependency>
+
     <dependency>
       <groupId>com.pega.prpc.pega73</groupId>
       <artifactId>log4j-core</artifactId>
@@ -86,17 +68,11 @@
       <version>2.6.2</version>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>com.pega.prpc.pega73</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.4</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.pega.prpc.pega73</groupId>
-      <artifactId>prenginext</artifactId>
-      <version>7.3</version>
       <scope>provided</scope>
     </dependency>
 
@@ -132,6 +108,34 @@
       <version>3.11.1</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>prbootstrap</artifactId>
+      <version>7.3.0-77</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.pega.prpc.pega73</groupId>
+      <artifactId>prbootstrap-api</artifactId>
+      <version>7.3.0-77</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>1.1.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.openjdk.jol</groupId>
+      <artifactId>jol-core</artifactId>
+      <version>0.9</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -154,7 +158,7 @@
           </execution>
           <execution>
             <id>report</id>
-            <phase>prepare-package</phase>
+            <phase>test</phase>
             <goals>
               <goal>report</goal>
             </goals>
@@ -183,27 +187,5 @@
       </plugin>
     </plugins>
   </reporting>
-
-<!--  <repositories>-->
-<!--    <repository>-->
-<!--      <id>pegas.release.repo</id>-->
-<!--      <url>http://sbtnexus.ca.sbrf.ru:8081/nexus/content/repositories/Pegas_release</url>-->
-<!--    </repository>-->
-<!--    <repository>-->
-<!--      <id>pegas.thirdparty.repo</id>-->
-<!--      <url>http://sbtnexus.ca.sbrf.ru:8081/nexus/content/repositories/Pegas_thirdparty</url>-->
-<!--    </repository>-->
-<!--  </repositories>-->
-
-<!--  <distributionManagement>-->
-<!--    <repository>-->
-<!--      <id>kkmb.release.repo</id>-->
-<!--      <url>http://sbtnexus.ca.sbrf.ru:8081/nexus/content/repositories/KKMB_release/</url>-->
-<!--    </repository>-->
-<!--    <snapshotRepository>-->
-<!--      <id>kkmb.snapshot.repo</id>-->
-<!--      <url>http://sbtnexus.ca.sbrf.ru:8081/nexus/content/repositories/KKMB_snapshot</url>-->
-<!--    </snapshotRepository>-->
-<!--  </distributionManagement>-->
 
 </project>

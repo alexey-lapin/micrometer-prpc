@@ -1,2 +1,22 @@
-# micrometer-registry-prpc
-[![lines](http://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=lines)](https://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=lines) [![coverage](http://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=coverage)](https://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=coverage) [![bugs](http://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=bugs)](https://sonar.ca.sbrf.ru/sonar/api/badges/measure?key=ru.sbrf.pegi18%3Amicrometer-registry-prpc&metric=bugs)
+# micrometer-prpc
+Pega PRPC + Micrometer = :heart:
+
+This small library aims to simplify usage of micrometer in Pega PRPC environment.
+
+### Usage
+Create sources:
+```java
+// SqlSource
+PrpcSource source = SqlSource.builder()
+        .queryString("select pyLabel as \"Tag(LABEL)\", pxUpdatesystemid as \"pyDescription\" from {CLASS:SourceTest}")
+        .maxRecords(100)
+        .expirationDuration(35)
+        .expirationTimeUnit(TimeUnit.SECONDS)
+        .groupResults()
+        .build();
+```
+
+Register metrics:
+```java
+
+```
