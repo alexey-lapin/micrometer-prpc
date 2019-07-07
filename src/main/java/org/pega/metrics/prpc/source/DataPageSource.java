@@ -24,10 +24,15 @@ public class DataPageSource extends AbstractRulePrpcSource {
         try {
             ClipboardPage page = tools().findPage(ruleName(), parameterPage());
             Objects.requireNonNull(page, "Failed to find data page " + ruleName());
-            if (StringUtils.isBlank(resultsPropName())) {
-                resultsProp = wrap(page);
+            if (StringUtils.isNotBlank(resultsPropName())) {
+                if (StringUtils.isNotBlank(groupPropName())) {
+                    page = page.copy();
+                    resultsProp = groupResults(page.getIfPresent(resultsPropName()), page.getProperty(groupPropName()));
+                } else {
+                    resultsProp = page.getProperty(resultsPropName());
+                }
             } else {
-                resultsProp = page.getProperty(resultsPropName());
+                resultsProp = wrap(page);
             }
         } catch (Exception ex) {
             logger.error(toString() + " obtain failed", ex);

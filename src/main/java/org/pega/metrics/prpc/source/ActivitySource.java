@@ -24,10 +24,14 @@ public class ActivitySource extends AbstractRulePrpcSource {
         try {
             primaryPage = tools().createPage(ruleClass(), null);
             tools().invokeActivity(primaryPage, parameterPage(), ruleName(), ruleClass(), "");
-            if (StringUtils.isBlank(resultsPropName())) {
-                resultsProp = wrap(primaryPage);
+            if (StringUtils.isNotBlank(resultsPropName())) {
+                if (StringUtils.isNotBlank(groupPropName())) {
+                    resultsProp = groupResults(primaryPage.getIfPresent(resultsPropName()), primaryPage.getProperty(groupPropName()));
+                } else {
+                    resultsProp = primaryPage.getProperty(resultsPropName());
+                }
             } else {
-                resultsProp = primaryPage.getProperty(resultsPropName());
+                resultsProp = wrap(primaryPage);
             }
         } catch (Exception ex) {
             logger.error(toString() + " obtain failed", ex);

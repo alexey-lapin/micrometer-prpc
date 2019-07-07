@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -149,12 +151,12 @@ public abstract class AbstractRulePrpcSource extends AbstractPrpcSource {
 
             SessionAuthorization sauth = auth.getSessionAuthorization();
             //get copy of available access groups
-            List<String> list = sauth.getAvailableAccessGroups();
+            List<String> list = new ArrayList<>(sauth.getAvailableAccessGroups());
             if (!list.contains(name)) {
                 list.add(name);
             }
 
-            auth.setAvailableAccessGroups(list, currentAccessGroup);
+            auth.setAvailableAccessGroups(Collections.unmodifiableList(list), currentAccessGroup);
 
             if (isBatch) {
                 auth.replaceAccessGroup(tools().getThread(), name);
