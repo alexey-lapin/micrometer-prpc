@@ -6,14 +6,20 @@ Expose your business and technical metrics from Pega to any monitoring system.
 This small library aims to simplify usage of [Micrometer](https://micrometer.io) for collecting metrics in [Pega PRPC](https://www.pega.com/products/pega-platform) environment.
 
 ### Build
-##### Prerequisites
+|version|  compatibility   |
+|:-----:|:----------------:|
+| 7.3.0 |:heavy_check_mark:|
+
+#### Prerequisites
 In order to build project locally you have to satisfy dependency prerequisites.
 
 This project does not include any dependencies or any proprietary code. 
 It is intended to use by authorized Pegasystems Inc clients in their Pega PRPC environments.
 
-This library relies on some internal prpc jars which usually could be found in `<pega-distributive>.zip/archives/pegadbinstall-classes.zip/lib`.
-libs:
+This library relies on some internal prpc jars which usually could be found in 
+`<pega-distributive>.zip/archives/pegadbinstall-classes.zip/lib`.
+
+Libs:
 - prpublic
 - prprivate
 - prenginext
@@ -26,7 +32,7 @@ The following command will help to install required jars to local maven reposito
 mvn install:install-file -Dfile=<path-to-prpc-libs>/<lib>-<version.prpc>.jar -DgroupId=com.pega.prpc -DartifactId=<lib> -Dversion=<version.prpc> -Dpackaging=jar
 ```
 
-##### Package
+#### Package
 After required jars are installed use the following command to build project:
 ```
 mvn package
