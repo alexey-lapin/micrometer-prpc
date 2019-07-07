@@ -1,0 +1,14 @@
+This product depends on software developed by
+Pegasystems Inc (https://www.pega.com)
+
+This product depends on 'micrometer'
+(https://github.com/micrometer-metrics/micrometer)
+
+This product depends on 'guava'
+(https://github.com/google/guava)
+
+This product depends on 'Apache Log4J'
+(http://logging.apache.org/log4j/)
+
+This product depends on 'Apache Commons'
+(https://commons.apache.org/)
