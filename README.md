@@ -7,12 +7,12 @@ This small library aims to simplify usage of [Micrometer](https://micrometer.io)
 [Pega PRPC](https://www.pega.com/products/pega-platform) environment. Developers can use familiar concept of 'rules'
 to implement metric value sources.
 
-### Build
 |version|  compatibility   |
 |:-----:|:----------------:|
 | 7.3.0 |:heavy_check_mark:|
 | 8.2.1 |:heavy_check_mark:|
 
+### Build
 #### Prerequisites
 In order to build the project locally, you have to satisfy dependency prerequisites.
 
@@ -153,4 +153,4 @@ prpc_requestors 14.0
 prpc_agents 55.0
 ``` 
 
-4. Configure promehtheus to scrape service url.
+4. Configure Promehtheus to scrape service URL.
