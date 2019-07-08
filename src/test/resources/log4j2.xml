@@ -8,7 +8,7 @@
 
   <Loggers>
 
-    <Root level="debug">
+    <Root level="fatal">
       <AppenderRef ref="CONSOLE"/>
     </Root>
 

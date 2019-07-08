@@ -3,7 +3,6 @@ package com.pega.pegarules.data.internal.clipboard;
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
 
-
 public class ClipboardPropertyFactory {
 
     private static ClipboardPropertyFactory instance;
