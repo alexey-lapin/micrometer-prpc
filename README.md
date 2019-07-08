@@ -12,6 +12,8 @@ to implement metric value sources.
 | 7.3.0 |:heavy_check_mark:|
 | 8.2.1 |:heavy_check_mark:|
 
+Java 8+ required.
+
 ### Build
 #### Prerequisites
 In order to build the project locally, you have to satisfy dependency prerequisites.
@@ -132,7 +134,9 @@ registry.more().counter("prpc.requestors.initiated", Tags.of("type", "service"),
 3. Implement rest service:
 ```java
 PrometheusMeterRegistry registry = (PrometheusMeterRegistry) RegistryHolder.getInstance().get("prometheus");
-response = registry.scrape();
+if (registry != null) {
+    response = registry.scrape();
+}
 ```
 
 The following setup results to a response which looks like:
