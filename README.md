@@ -7,10 +7,12 @@ This small library aims to simplify usage of [Micrometer](https://micrometer.io)
 [Pega PRPC](https://www.pega.com/products/pega-platform) environment. Developers can use familiar concept of 'rules'
 to implement metric value sources.
 
-|version|  compatibility   |
-|:-----:|:----------------:|
-| 7.3.0 |:heavy_check_mark:|
-| 8.2.1 |:heavy_check_mark:|
+![alt text](img/dashboard.jpg "dashboard")
+
+|PRPC version|     tested       |
+|:----------:|:----------------:|
+|   7.3.0    |:heavy_check_mark:|
+|   8.2.1    |:heavy_check_mark:|
 
 Java 8+ required.
 
