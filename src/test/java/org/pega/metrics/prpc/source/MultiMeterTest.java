@@ -23,7 +23,7 @@ class MultiMeterTest {
         AbstractPrpcSource source = mock(AbstractPrpcSource.class);
         when(source.get()).thenReturn(Optional.empty());
 
-        Iterable<MultiGauge.Row> rows = MultiMeter.rows(source, PROP_NAME);
+        Iterable<MultiGauge.Row<?>> rows = MultiMeter.rows(source, PROP_NAME);
 
         assertThat(rows).isEmpty();
     }
@@ -48,7 +48,7 @@ class MultiMeterTest {
         when(source.get()).thenReturn(Optional.of(prop));
         when(source.tagsPropName()).thenReturn("Tag");
 
-        Iterable<MultiGauge.Row> rows = MultiMeter.rows(source, PROP_NAME);
+        Iterable<MultiGauge.Row<?>> rows = MultiMeter.rows(source, PROP_NAME);
 
         assertThat(rows).extracting("uniqueTags", "obj").contains(tuple(tags1, source)).contains(tuple(tags2, source));
     }
@@ -60,7 +60,7 @@ class MultiMeterTest {
         AbstractPrpcSource source = mock(AbstractPrpcSource.class);
         when(source.get()).thenReturn(Optional.of(prop));
 
-        Iterable<MultiGauge.Row> rows = MultiMeter.rows(source, PROP_NAME);
+        Iterable<MultiGauge.Row<?>> rows = MultiMeter.rows(source, PROP_NAME);
 
         assertThat(rows).isEmpty();
     }
@@ -74,7 +74,7 @@ class MultiMeterTest {
         AbstractPrpcSource source = mock(AbstractPrpcSource.class);
         when(source.get()).thenReturn(Optional.of(prop));
 
-        Iterable<MultiGauge.Row> rows = MultiMeter.rows(source, PROP_NAME);
+        Iterable<MultiGauge.Row<?>> rows = MultiMeter.rows(source, PROP_NAME);
 
         assertThat(rows).isEmpty();
     }

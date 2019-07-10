@@ -15,14 +15,14 @@ public class MultiMeter {
     }
 
     @SuppressWarnings("unchecked")
-    public static Iterable<MultiGauge.Row> rows(AbstractPrpcSource source, String valuePropName) {
-        List<MultiGauge.Row> rows = Collections.emptyList();
+    public static Iterable<MultiGauge.Row<?>> rows(PrpcSource source, String valuePropName) {
+        List<MultiGauge.Row<?>> rows = Collections.emptyList();
 
         ClipboardProperty obtained = source.get().orElse(null);
         if (obtained != null && obtained.isGroup() && !obtained.isEmpty()) {
             rows = new LinkedList<>();
             for (ClipboardProperty item : (Iterable<ClipboardProperty>) obtained) {
-                Tags tags = PrpcTags.of(item.getProperty(source.tagsPropName()));
+                Tags tags = PrpcTags.of(item.getProperty(((AbstractPrpcSource) source).tagsPropName()));
                 rows.add(MultiGauge.Row.of(tags, source, PrpcCallback.weak(tags, valuePropName)));
             }
         }
