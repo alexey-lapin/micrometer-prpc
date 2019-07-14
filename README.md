@@ -24,15 +24,14 @@ This project does not include any dependencies or any proprietary code.
 It is intended to be used by authorized Pegasystems Inc clients in their Pega PRPC environments.
 
 This library relies on some internal PRPC jars which usually could be found in 
-`<pega-distributive>.zip/archives/pegadbinstall-classes.zip/lib`.
+`<pega-distributive>.zip/archives/pegadbinstall-classes.zip/lib`:
 
-Libs:
-- prpublic
-- prprivate
-- prenginext
-- pricu2jdk
 - prbootstrap
 - prbootstrap-api
+- prenginext
+- pricu2jdk
+- prprivate
+- prpublic
 
 The following command will help to install the required jars to a local maven repository:
 ```
@@ -87,7 +86,7 @@ PrpcSource source = ActivitySource.builder()
         .build();
 ```
 
-The output of a source should looks like:
+A source should construct the following clipboard structure:
 ```
 TopLevelPage [Page]
     pxResults(1) [Page List]
@@ -124,11 +123,11 @@ For more information about micrometer features visit micrometer [docs](https://m
 
 ### [Prometheus](https://prometheus.io/) + [Grafana](https://grafana.com/) example
 1. Deploy libs:
-- [micrometer-prpc-\<LATEST>.jar](https://github.com/D1le/micrometer-prpc/releases/latest)
-- [micrometer-core-\<LATEST>.jar](https://search.maven.org/search?q=g:io.micrometer%20AND%20a:micrometer-core%20AND%20v:1.1*%20&core=gav)
-- [micrometer-registry-prometheus-\<LATEST>.jar](https://search.maven.org/search?q=g:io.micrometer%20AND%20a:micrometer-registry-prometheus%20AND%20v:1.1*)
-- [simpleclient_common-\<LATEST>.jar](https://search.maven.org/search?q=g:io.prometheus%20AND%20a:simpleclient_common%20AND%20v:0.5.0)
-- [simpleclient-\<LATEST>.jar](https://search.maven.org/search?q=g:io.prometheus%20AND%20a:simpleclient%20AND%20v:0.5.0)
+- [micrometer-prpc.jar](https://github.com/D1le/micrometer-prpc/releases/latest)
+- [micrometer-core.jar](https://search.maven.org/search?q=g:io.micrometer%20AND%20a:micrometer-core%20AND%20v:1.1*%20&core=gav)
+- [micrometer-registry-prometheus.jar](https://search.maven.org/search?q=g:io.micrometer%20AND%20a:micrometer-registry-prometheus%20AND%20v:1.1*)
+- [simpleclient_common.jar](https://search.maven.org/search?q=g:io.prometheus%20AND%20a:simpleclient_common%20AND%20v:0.5.0)
+- [simpleclient.jar](https://search.maven.org/search?q=g:io.prometheus%20AND%20a:simpleclient%20AND%20v:0.5.0)
 
 2. Implement startup agent:
 ```java
@@ -136,13 +135,14 @@ For more information about micrometer features visit micrometer [docs](https://m
 MeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 RegistryHolder.getInstance().put("prometheus", registry);
 
-// Register meters which have constant tags cardinality during app lifetime
+// Create source from out-of-the-box data page - D_pzNodeInformation
 PrpcSource source = DataPageSource.builder()
         .ruleName("D_pzNodeInformation")
         .expirationDuration(2)
         .expirationTimeUnit(TimeUnit.MINUTES)
         .build();
 
+// Register meters which have constant tags cardinality during app lifetime
 registry.gauge("prpc.node.requestors", source, PrpcCallback.strong(source, "pxNumberRequestors"));
 registry.gauge("prpc.node.agents", source, PrpcCallback.strong(source, "pxNumberAgents"));
 registry.gauge("prpc.node.listeners", source, PrpcCallback.strong(source, "pxNumberListeners"));
