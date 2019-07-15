@@ -10,8 +10,7 @@ before_install:
 install: true
 
 script:
-  - java -version
-  - uname -a
+  - ./mvnw test -B -Dversion.prpc=$VERSION_PRPC
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
