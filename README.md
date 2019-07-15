@@ -1,4 +1,4 @@
-# micrometer-prpc
+# micrometer-prpc [![Build Status](https://travis-ci.com/D1le/micrometer-prpc.svg?branch=master)](https://travis-ci.com/D1le/micrometer-prpc)
 Pega PRPC + Micrometer = :heart:
 
 Expose your business and technical metrics from Pega to any monitoring system.
