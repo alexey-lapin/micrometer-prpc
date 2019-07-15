@@ -4,10 +4,8 @@ env:
   global:
     - VERSION_PRPC=8.2.2
 
-before_install:
+install:
   - .travis/install-dependencies.sh
-
-install: true
 
 script:
   - ./mvnw test -B -Dversion.prpc=$VERSION_PRPC

@@ -35,13 +35,13 @@ This library relies on some internal PRPC jars which usually could be found in
 
 The following command will help to install the required jars to a local maven repository:
 ```
-mvn install:install-file -Dfile=<path-to-prpc-libs>/<lib>.jar -DgroupId=com.pega.prpc -DartifactId=<lib> -Dversion=<version.prpc> -Dpackaging=jar
+./mvnw install:install-file -Dfile=<path-to-prpc-libs>/<lib>.jar -DgroupId=com.pega.prpc -DartifactId=<lib> -Dversion=<version.prpc> -Dpackaging=jar -Dversion.prpc=<version.prpc>
 ```
 
 #### Package
 After the required jars are installed you may use the following command to build project:
 ```
-mvn package -Dversion.prpc=<version.prpc>
+./mvnw package -Dversion.prpc=<version.prpc>
 ```
 
 ### Install
