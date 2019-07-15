@@ -3,8 +3,6 @@ charset=utf-8
 end_of_line=lf
 insert_final_newline=false
 indent_style=space
-indent_size=4
 
 [{*.jhm,*.xslt,*.xul,*.rng,*.xsl,*.xsd,*.ant,*.svg,*.tld,*.fxml,*.jrxml,*.xml,*.jnlp,*.wsdl,*.pom}]
-indent_style=space
 indent_size=2

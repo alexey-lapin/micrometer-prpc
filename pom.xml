@@ -170,18 +170,19 @@
     </plugins>
   </build>
 
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-        </configuration>
-      </plugin>
-    </plugins>
-  </reporting>
+  <profiles>
+    <profile>
+      <id>730</id>
+      <properties>
+        <version.prpc>7.3.0</version.prpc>
+      </properties>
+    </profile>
+    <profile>
+      <id>822</id>
+      <properties>
+        <version.prpc>8.2.2</version.prpc>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>

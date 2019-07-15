@@ -1,0 +1,14 @@
+language: java
+
+env:
+  global:
+    - VERSION_PRPC=8.2.2
+
+install:
+  - .travis/install-dependencies.sh
+
+script:
+  - ./mvnw test -B -Dversion.prpc=$VERSION_PRPC
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
