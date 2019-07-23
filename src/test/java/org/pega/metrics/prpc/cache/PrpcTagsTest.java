@@ -1,4 +1,4 @@
-package org.pega.metrics.prpc;
+package org.pega.metrics.prpc.cache;
 
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
 import io.micrometer.core.instrument.Tag;
@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.Tags;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jol.info.GraphLayout;
+import org.pega.metrics.prpc.cache.PrpcTags;
 
 import java.util.Arrays;
 

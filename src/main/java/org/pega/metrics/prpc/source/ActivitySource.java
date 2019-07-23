@@ -1,7 +1,9 @@
 package org.pega.metrics.prpc.source;
 
+import com.pega.pegarules.priv.factory.ThreadLocalStringMapFactoryImpl;
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
+import com.pega.pegarules.pub.util.StringMap;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
@@ -23,7 +25,10 @@ public class ActivitySource extends AbstractRulePrpcSource {
         ClipboardPage primaryPage = null;
         try {
             primaryPage = tools().createPage(ruleClass(), null);
-            tools().invokeActivity(primaryPage, parameterPage(), ruleName(), ruleClass(), "");
+//            StringMap keys = ThreadLocalStringMapFactoryImpl.getFactory().acquire();
+            StringMap keys = null;
+            tools().doActivity(keys, primaryPage, parameterPage());
+//            tools().invokeActivity(primaryPage, parameterPage(), ruleName(), ruleClass(), "");
             if (StringUtils.isNotBlank(resultsPropName())) {
                 if (StringUtils.isNotBlank(groupPropName())) {
                     resultsProp = groupResults(primaryPage.getIfPresent(resultsPropName()), primaryPage.getProperty(groupPropName()));

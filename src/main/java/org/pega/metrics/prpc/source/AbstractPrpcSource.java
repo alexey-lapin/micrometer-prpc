@@ -12,7 +12,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.pega.metrics.prpc.PrpcTags;
+import org.pega.metrics.prpc.cache.PrpcTags;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -113,8 +113,7 @@ public abstract class AbstractPrpcSource implements PrpcSource {
         private TimeUnit expirationTimeUnit = TimeUnit.SECONDS;
 
         public T parameterPage(ParameterPage parameterPage) {
-            this.parameterPage = new ParameterPage();
-            this.parameterPage.putAll(Objects.requireNonNull(parameterPage));
+            this.parameterPage = Objects.requireNonNull(parameterPage).copyValues();
             return self();
         }
 
@@ -160,11 +159,11 @@ public abstract class AbstractPrpcSource implements PrpcSource {
         @Override
         public int hashCode() {
             return new HashCodeBuilder()
-                .append(getClass().getName())
-                .append(parameterPage)
-                .append(tagsPropName)
-                .append(groupPropName)
-                .hashCode();
+                    .append(getClass().getName())
+                    .append(parameterPage)
+                    .append(tagsPropName)
+                    .append(groupPropName)
+                    .hashCode();
         }
 
         @Override
@@ -175,10 +174,10 @@ public abstract class AbstractPrpcSource implements PrpcSource {
 
             AbstractPrpcSourceBuilder builder = (AbstractPrpcSourceBuilder) other;
             return new EqualsBuilder()
-                .append(parameterPage, builder.parameterPage)
-                .append(tagsPropName, builder.tagsPropName)
-                .append(groupPropName, builder.groupPropName)
-                .isEquals();
+                    .append(parameterPage, builder.parameterPage)
+                    .append(tagsPropName, builder.tagsPropName)
+                    .append(groupPropName, builder.groupPropName)
+                    .isEquals();
         }
     }
 }

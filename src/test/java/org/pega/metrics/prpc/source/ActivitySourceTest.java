@@ -94,6 +94,7 @@ class ActivitySourceTest {
     @Test
     void should_obtainReturnsEmptyOptional_when_toolsInvokeActivityThrowsException() {
         doThrow(PRRuntimeException.class).when(tools).invokeActivity(any(), any(), any(), any(), any());
+        doThrow(PRRuntimeException.class).when(tools).doActivity(any(), any(), any());
 
         ActivitySource.ActivitySourceBuilder builder = ActivitySource.builder()
             .ruleClass(TEST_RULE_CLASS)

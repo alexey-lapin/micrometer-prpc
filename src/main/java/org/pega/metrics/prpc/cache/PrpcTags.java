@@ -1,4 +1,4 @@
-package org.pega.metrics.prpc;
+package org.pega.metrics.prpc.cache;
 
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
 import io.micrometer.core.instrument.Tags;
