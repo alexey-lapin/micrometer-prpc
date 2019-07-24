@@ -95,7 +95,6 @@ public class PropertyMock {
         }
     }
 
-
     public static class TagPropDef {
         private String ref;
         private Tags tags;

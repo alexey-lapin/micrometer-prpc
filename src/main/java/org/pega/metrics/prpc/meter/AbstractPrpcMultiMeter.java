@@ -15,6 +15,12 @@ import java.util.stream.StreamSupport;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
+/**
+ * Skeletal implementation of multi-meters
+ *
+ * @see io.micrometer.core.instrument.MultiGauge
+ * @author Alexey Lapin
+ */
 public abstract class AbstractPrpcMultiMeter {
 
     private final AtomicReference<Set<Meter.Id>> registeredRows = new AtomicReference<>(emptySet());
@@ -33,15 +39,23 @@ public abstract class AbstractPrpcMultiMeter {
         return registry;
     }
 
+    PrpcSource getSource() {
+        return source;
+    }
+
     public void register() {
         register(false);
     }
 
+    /**
+     * Get new rows from source and re-register meters
+     * @param overwrite already registered meters
+     */
     public void register(boolean overwrite) {
         registeredRows.getAndUpdate(oldRows -> {
             Set<Meter.Id> newRows = StreamSupport.stream(rows(source).spliterator(), false)
                     .map(row -> {
-                        Meter.Id rowId = commonId.withTags(row.getUniqueTags());
+                        Meter.Id rowId = commonId.withTags(row.tags);
                         boolean previouslyDefined = oldRows.contains(rowId);
 
                         if (overwrite && previouslyDefined) {
@@ -72,9 +86,7 @@ public abstract class AbstractPrpcMultiMeter {
     public int hashCode() {
         return new HashCodeBuilder()
                 .append(getClass().getName())
-                .append(registry)
                 .append(commonId)
-                .append(source)
                 .hashCode();
     }
 
@@ -86,27 +98,19 @@ public abstract class AbstractPrpcMultiMeter {
 
         AbstractPrpcMultiMeter meter = (AbstractPrpcMultiMeter) other;
         return new EqualsBuilder()
-                .append(registry, meter.registry)
                 .append(commonId, meter.commonId)
-                .append(source, meter.source)
                 .isEquals();
     }
 
     protected static class AbstractRow {
-        private final Tags uniqueTags;
-        private final PrpcSource source;
+        private final Tags tags;
 
-        AbstractRow(Tags tags, PrpcSource source) {
-            this.uniqueTags = tags;
-            this.source = source;
+        AbstractRow(Tags tags) {
+            this.tags = tags;
         }
 
-        public Tags getUniqueTags() {
-            return uniqueTags;
-        }
-
-        public PrpcSource getSource() {
-            return source;
+        public Tags getTags() {
+            return tags;
         }
     }
 
@@ -122,20 +126,26 @@ public abstract class AbstractPrpcMultiMeter {
         private Meter.Type type;
         private Tags tags = Tags.empty();
 
+        /**
+         * @return this builder
+         */
         protected abstract T self();
 
+        /**
+         * @param name Meter name
+         * @return The meter builder with added name.
+         */
         T name(String name) {
             this.name = name;
             return self();
         }
 
+        /**
+         * @param type Meter type
+         * @return The meter builder with added type.
+         */
         T type(Meter.Type type) {
             this.type = type;
-            return self();
-        }
-
-        public T registry(MeterRegistry registry) {
-            this.registry = registry;
             return self();
         }
 
@@ -184,11 +194,27 @@ public abstract class AbstractPrpcMultiMeter {
             return self();
         }
 
+        /**
+         * @param registry Registry where register meters to
+         * @return The meter builder with added registry.
+         */
+        public T registry(MeterRegistry registry) {
+            this.registry = registry;
+            return self();
+        }
+
+        /**
+         * @param source Source from where get tags and values for meters
+         * @return The meter builder with added source.
+         */
         public T source(PrpcSource source) {
             this.source = source;
             return self();
         }
 
+        /**
+         * @return Ready to use multi meter
+         */
         public abstract AbstractPrpcMultiMeter build();
     }
 }

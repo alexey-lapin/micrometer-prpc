@@ -25,10 +25,7 @@ public class ActivitySource extends AbstractRulePrpcSource {
         ClipboardPage primaryPage = null;
         try {
             primaryPage = tools().createPage(ruleClass(), null);
-//            StringMap keys = ThreadLocalStringMapFactoryImpl.getFactory().acquire();
-            StringMap keys = null;
-            tools().doActivity(keys, primaryPage, parameterPage());
-//            tools().invokeActivity(primaryPage, parameterPage(), ruleName(), ruleClass(), "");
+            tools().invokeActivity(primaryPage, parameterPage(), ruleName(), ruleClass(), "");
             if (StringUtils.isNotBlank(resultsPropName())) {
                 if (StringUtils.isNotBlank(groupPropName())) {
                     resultsProp = groupResults(primaryPage.getIfPresent(resultsPropName()), primaryPage.getProperty(groupPropName()));

@@ -7,6 +7,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * This class encapsulates a cache store for {@code MeterRegistry} objects.
+ * It could be used in some cases:
+ *  - at node startup time to remember created registries
+ *  - at some time after startup to publish metrics (recurring)
+ *
  * @author Alexey Lapin
  */
 @Singleton
@@ -32,5 +37,4 @@ public class Registries {
     public int size() {
         return cache.size();
     }
-
 }

@@ -13,7 +13,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.pega.metrics.prpc.TagProp;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -22,6 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.pega.metrics.prpc.PropertyMock.TagPropDef.tagPropDef;
+import static org.pega.metrics.prpc.PropertyMock.ValuePropDef.valuePropDef;
+import static org.pega.metrics.prpc.PropertyMock.mockSourcePropBuilder;
 
 class SqlSourceTest {
 
@@ -76,18 +78,10 @@ class SqlSourceTest {
 
         @Test
         void should_addPagesToTargetProp_when_sourcePropIsList() {
-            ClipboardProperty tagProp1 = TagProp.of(Tags.of("name1", "val1"));
-            ClipboardProperty tagProp2 = TagProp.of(Tags.of("name1", "val2"));
-
-            ClipboardProperty sourceItem1 = mock(ClipboardProperty.class);
-            when(sourceItem1.getProperty("Tag")).thenReturn(tagProp1);
-
-            ClipboardProperty sourceItem2 = mock(ClipboardProperty.class);
-            when(sourceItem2.getProperty("Tag")).thenReturn(tagProp2);
-
-            ClipboardProperty sourceProp = mock(ClipboardProperty.class);
-            when(sourceProp.isList()).thenReturn(true);
-            when(sourceProp.iterator()).then(mock -> Arrays.asList(sourceItem1, sourceItem2).iterator());
+            ClipboardProperty sourceProp = mockSourcePropBuilder().group()
+                    .addItem(tagPropDef("Tag", Tags.of("name1", "val1")), valuePropDef("Val", Collections.emptyMap()))
+                    .addItem(tagPropDef("Tag", Tags.of("name1", "val2")), valuePropDef("Val", Collections.emptyMap()))
+                    .build();
 
             Map<String, ClipboardProperty> targetMap = new HashMap<>();
             targetProp = mock(ClipboardProperty.class);
@@ -95,23 +89,15 @@ class SqlSourceTest {
 
             source.groupResults(sourceProp, targetProp);
 
-            assertThat(targetMap).containsValue(sourceItem1).containsValue(sourceItem2);
+            assertThat(targetMap.size()).isEqualTo(2);
         }
 
         @Test
         void should_addPagesToTargetProp_when_sourcePropIsGroup() {
-            ClipboardProperty tagProp1 = TagProp.of(Tags.of("name1", "val1"));
-            ClipboardProperty tagProp2 = TagProp.of(Tags.of("name1", "val2"));
-
-            ClipboardProperty sourceItem1 = mock(ClipboardProperty.class);
-            when(sourceItem1.getProperty("Tag")).thenReturn(tagProp1);
-
-            ClipboardProperty sourceItem2 = mock(ClipboardProperty.class);
-            when(sourceItem2.getProperty("Tag")).thenReturn(tagProp2);
-
-            ClipboardProperty sourceProp = mock(ClipboardProperty.class);
-            when(sourceProp.isGroup()).thenReturn(true);
-            when(sourceProp.iterator()).then(mock -> Arrays.asList(sourceItem1, sourceItem2).iterator());
+            ClipboardProperty sourceProp = mockSourcePropBuilder().group()
+                    .addItem(tagPropDef("Tag", Tags.of("name1", "val1")), valuePropDef("Val", Collections.emptyMap()))
+                    .addItem(tagPropDef("Tag", Tags.of("name1", "val2")), valuePropDef("Val", Collections.emptyMap()))
+                    .build();
 
             Map<String, ClipboardProperty> targetMap = new HashMap<>();
             targetProp = mock(ClipboardProperty.class);
@@ -119,7 +105,7 @@ class SqlSourceTest {
 
             source.groupResults(sourceProp, targetProp);
 
-            assertThat(targetMap).containsValue(sourceItem1).containsValue(sourceItem2);
+            assertThat(targetMap.size()).isEqualTo(2);
         }
 
         @Test

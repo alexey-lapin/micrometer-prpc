@@ -27,7 +27,7 @@ public class PrpcMultiGauge extends AbstractPrpcMultiMeter {
     @Override
     protected void registerMeter(Meter.Id rowId, AbstractRow row) {
         GaugeRow gaugeRow = (GaugeRow) row;
-        getRegistry().gauge(rowId.getName(), row.getUniqueTags(), gaugeRow.getSource(), gaugeRow.valueFunction);
+        getRegistry().gauge(rowId.getName(), row.getTags(), getSource(), gaugeRow.valueFunction);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class PrpcMultiGauge extends AbstractPrpcMultiMeter {
             rows = new LinkedList<>();
             for (ClipboardProperty item : (Iterable<ClipboardProperty>) obtained) {
                 Tags tags = PrpcTags.of(item.getProperty(((AbstractPrpcSource) source).tagsPropName()));
-                rows.add(new GaugeRow(tags, source, PrpcCallback.strong(source, tags, valuePropName)));
+                rows.add(new GaugeRow(tags, PrpcCallback.strong(source, tags, valuePropName)));
             }
         }
         return rows;
@@ -74,8 +74,8 @@ public class PrpcMultiGauge extends AbstractPrpcMultiMeter {
     public static class GaugeRow extends AbstractRow {
         private ToDoubleFunction<PrpcSource> valueFunction;
 
-        GaugeRow(Tags tags, PrpcSource source, ToDoubleFunction<PrpcSource> valueFunction) {
-            super(tags, source);
+        GaugeRow(Tags tags, ToDoubleFunction<PrpcSource> valueFunction) {
+            super(tags);
             this.valueFunction = valueFunction;
         }
     }
