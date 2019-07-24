@@ -5,7 +5,7 @@ import com.pega.pegarules.pub.clipboard.ClipboardProperty;
 import io.micrometer.core.instrument.Tags;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.pega.metrics.prpc.PrpcTags;
+import org.pega.metrics.prpc.cache.PrpcTags;
 
 import java.util.function.ToDoubleFunction;
 
@@ -54,17 +54,18 @@ public class PrpcCallback implements ToDoubleFunction<PrpcSource> {
             if (obtained != null) {
                 ClipboardProperty valueProperty = null;
                 if (obtained.isGroup() && !obtained.isEmpty()) {
-                    valueProperty = obtained.getPageValue(PrpcTags.id(tags)).getIfPresent(valuePropName);
+                    valueProperty = obtained.getPageValue(PrpcTags.id(tags))
+                            .getIfPresent(valuePropName);
                 } else if (obtained.isPage()) {
                     valueProperty = obtained.getPageValue().getIfPresent(valuePropName);
                 }
                 if (valueProperty != null) value = valueProperty.toDouble();
             }
         } catch (Exception ex) {
-            logger.error("Callback for '{}' and tags '{}' failed: '{}'", source, tags, ex.getMessage());
+            logger.error("Callback for '{}' with tags '{}' failed: '{}'", source, tags, ex.getMessage());
         }
 
-        logger.debug("Callback for '{}' and tags '{}' finished - spent: {}",
+        logger.debug("Callback for '{}' with tags '{}' finished - spent: {}",
             () -> source, () -> tags, () -> watch != null ? watch.toString() : "null");
         return value;
     }

@@ -1,4 +1,4 @@
-package org.pega.metrics.prpc;
+package org.pega.metrics.prpc.cache;
 
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
 import io.micrometer.core.instrument.Tags;
@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * in case of inappropriate usage.
  * See PrpcTagsTest#memoryBenchmark test for more details about memory footprint.
  *
+ * @link org.pega.metrics.prpc.source.PrpcCallback
+ * @link org.pega.metrics.prpc.source.AbstractPrpcSource#groupResults(ClipboardProperty, ClipboardProperty)
  * @author Alexey Lapin
- * @see org.pega.metrics.prpc.source.PrpcCallback
- * @see org.pega.metrics.prpc.source.AbstractPrpcSource#groupResults(ClipboardProperty, ClipboardProperty)
  */
 public class PrpcTags {
 

@@ -115,9 +115,11 @@ MeterRegistry registry = ...
 registry.gauge("metric.gauge.single", source, PrpcCallback.strong(source, "PropertyReference"));
 
 // MultiGauge - register multiple metrics with unique tags
-MultiGauge mg = MultiGauge.builder("metric.gauge.multi").register(registry);
-Iterable<MultiGauge.Row<?>> rows = MultiMeter.rows(source, "PropertyReference");
-mg.register(rows);
+PrpcMultiGauge mg = PrpcMultiGauge.builder("metric.gauge.multi")
+                .registry(registry)
+                .source(source)
+                .valuePropName("PropertyReference")
+                .build();
 
 // Counter
 registry.more().counter("metric.counter.single", Tags.empty(), source, PrpcCallback.strong(source, "PropertyReference"));
@@ -137,7 +139,7 @@ For more information about micrometer features visit micrometer [docs](https://m
 ```java
 // Initialize registry and store it
 MeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-RegistryHolder.getInstance().put("prometheus", registry);
+Metrics.getInstance().registries().put("prometheus", registry);
 
 // Create source from out-of-the-box data page - D_pzNodeInformation
 PrpcSource source = DataPageSource.builder()
@@ -155,12 +157,41 @@ registry.more().counter("prpc.node.requestors.initiated", Tags.of("type", "brows
 registry.more().counter("prpc.node.requestors.initiated", Tags.of("type", "batch"), source, PrpcCallback.strong(source, "pxNumberBatchInitiatedRequestorStarts"));
 registry.more().counter("prpc.node.requestors.initiated", Tags.of("type", "service"), source, PrpcCallback.strong(source, "pxNumberServiceInitiatedRequestorStarts"));
 registry.more().counter("prpc.node.requestors.initiated", Tags.of("type", "portlet"), source, PrpcCallback.strong(source, "pxNumberPortletInitiatedRequestorStarts"));
+
+// Create custom activity source
+PrpcSource source = ActivitySource.builder()
+                .ruleName("MetricRequestorPools")
+                .ruleClass("Code-Pega-List")
+                .accessGroupName("Metrics")
+                .resultsPropName("pxResults")
+                .groupPropName("pxPages")
+                .expirationDuration(2)
+                .expirationTimeUnit(TimeUnit.Minutes)
+                .build();
+
+// Register meters which have various tags cardinality during app lifetime
+PrpcMultiGauge mg = PrpcMultiGauge.builder("prpc.requestor.pools.active")
+                .registry(registry)
+                .source(source)
+                .valuePropName("Value(active)")
+                .build();
+
+// Store to cache
+Metrics.getInstance().meters().add(mg);
+
+mg.register();
 ```
 
-3. Implement rest service:
+3. Implement recurring agent (eg. every 10 minutes)
+```java
+// Get stored multi meters and re-register
+Metrics.getInstance().meters().register();
+```
+
+4. Implement rest service:
 ```java
 // Obtain registry and get textual representation of metrics
-PrometheusMeterRegistry registry = (PrometheusMeterRegistry) RegistryHolder.getInstance().get("prometheus");
+PrometheusMeterRegistry registry = (PrometheusMeterRegistry) Metrics.getInstance().registries().get("prometheus");
 if (registry != null) {
     response = registry.scrape();
 }
@@ -191,6 +222,6 @@ prpc_node_requestors 14.0
 prpc_node_production_level 2.0
 ``` 
 
-4. Configure Prometheus to scrape created rest service URL.
-5. Configure Prometheus data source in Grafana.
-6. Create dashboard in Grafana which could look like image above.
+5. Configure Prometheus to scrape created rest service URL.
+6. Configure Prometheus data source in Grafana.
+7. Create dashboard in Grafana which could look like image above.

@@ -1,7 +1,9 @@
 package org.pega.metrics.prpc.source;
 
+import com.pega.pegarules.priv.factory.ThreadLocalStringMapFactoryImpl;
 import com.pega.pegarules.pub.clipboard.ClipboardPage;
 import com.pega.pegarules.pub.clipboard.ClipboardProperty;
+import com.pega.pegarules.pub.util.StringMap;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Optional;
