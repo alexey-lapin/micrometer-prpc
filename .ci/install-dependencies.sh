@@ -4,7 +4,7 @@ set -e -u
 
 echo "Resolving private dependencies for version ${VERSION_PRPC}"
 
-DEPS_DIR="$TRAVIS_BUILD_DIR/target/dependencies"
+DEPS_DIR="./target/dependencies"
 
 DEPS_DOWNLOAD_URL_VAR="DEPS_DOWNLOAD_URL_${VERSION_PRPC//\./_}"
 DEPS_DOWNLOAD_URL=${!DEPS_DOWNLOAD_URL_VAR}
