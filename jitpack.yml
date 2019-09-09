@@ -1,0 +1,8 @@
+env:
+  VERSION_PRPC: 8.2.2
+
+before_install:
+  - .travis/install-dependencies.sh
+
+install:
+  - ./mvnw clean install -B -DskipTest -Dversion.prpc=$VERSION_PRPC
