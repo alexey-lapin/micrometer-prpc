@@ -5,4 +5,4 @@ before_install:
   - .travis/install-dependencies.sh
 
 install:
-  - ./mvnw install -B -DskipTest -Dversion.prpc=$VERSION_PRPC
+  - ./mvnw clean install -B -DskipTest -Dversion.prpc=$VERSION_PRPC
