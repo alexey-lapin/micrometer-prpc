@@ -1,7 +1,7 @@
 # micrometer-prpc
-[![Latest release](https://img.shields.io/github/release/D1le/micrometer-prpc.svg)](https://github.com/D1le/micrometer-prpc/releases/latest)
-[![Build Status](https://travis-ci.com/D1le/micrometer-prpc.svg?branch=master)](https://travis-ci.com/D1le/micrometer-prpc)
-[![codecov](https://codecov.io/gh/D1le/micrometer-prpc/branch/master/graph/badge.svg)](https://codecov.io/gh/D1le/micrometer-prpc)
+[![Latest release](https://img.shields.io/github/release/alexey-lapin/micrometer-prpc.svg)](https://github.com/alexey-lapin/micrometer-prpc/releases/latest)
+[![Build Status](https://travis-ci.com/alexey-lapin/micrometer-prpc.svg?branch=master)](https://travis-ci.com/alexey-lapin/micrometer-prpc)
+[![codecov](https://codecov.io/gh/alexey-lapin/micrometer-prpc/branch/master/graph/badge.svg)](https://codecov.io/gh/alexey-lapin/micrometer-prpc)
 
 Pega PRPC + Micrometer = :heart:
 
@@ -129,7 +129,7 @@ For more information about micrometer features visit micrometer [docs](https://m
 
 ### [Prometheus](https://prometheus.io/) + [Grafana](https://grafana.com/) example
 1. Deploy libs:
-- [micrometer-prpc.jar](https://github.com/D1le/micrometer-prpc/releases/latest)
+- [micrometer-prpc.jar](https://github.com/alexey-lapin/micrometer-prpc/releases/latest)
 - [micrometer-core.jar](https://search.maven.org/search?q=g:io.micrometer%20AND%20a:micrometer-core%20AND%20v:1.1*%20&core=gav)
 - [micrometer-registry-prometheus.jar](https://search.maven.org/search?q=g:io.micrometer%20AND%20a:micrometer-registry-prometheus%20AND%20v:1.1*)
 - [simpleclient_common.jar](https://search.maven.org/search?q=g:io.prometheus%20AND%20a:simpleclient_common%20AND%20v:0.5.0)
