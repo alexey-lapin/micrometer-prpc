@@ -5,4 +5,4 @@ before_install:
   - .ci/install-dependencies.sh
 
 install:
-  - ./mvnw clean install -B -DskipTest -Dversion.prpc=$VERSION_PRPC
+  - ./mvnw clean install -B -DskipTests -Dversion.prpc=$VERSION_PRPC
